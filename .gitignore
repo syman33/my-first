@@ -1,0 +1,42 @@
+# dependencies
+/node_modules
+
+# generated
+/src/generated/
+
+# testing
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/tests/e2e/.auth/
+
+# next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# local uploads (development storage provider)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# local backups produced by scripts/db/backup.sh
+/backups/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+
+# env files — never commit real secrets; .env.example is the documented template
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel
