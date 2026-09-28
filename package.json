@@ -2,6 +2,7 @@
   "name": "velora",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "VÉLORA (فيلورا) — premium fashion & accessories e-commerce platform for Saudi Arabia",
   "engines": {
     "node": ">=22.12.0 <23"
@@ -30,10 +31,11 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate && tsx scripts/db/check-migrations.ts",
-    "jobs:run": "tsx scripts/jobs/run-job.ts",
-    "admin:create": "tsx scripts/admin/create-admin.ts",
+    "jobs:run": "tsx --conditions=react-server scripts/jobs/run-job.ts",
+    "admin:create": "tsx --conditions=react-server scripts/admin/create-admin.ts",
     "postinstall": "prisma generate",
-    "e2e:prepare": "tsx scripts/e2e/prepare-db.ts"
+    "e2e:prepare": "tsx scripts/e2e/prepare-db.ts",
+    "assets:images": "tsx scripts/assets/generate-images.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",
