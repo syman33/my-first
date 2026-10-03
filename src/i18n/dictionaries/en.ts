@@ -182,7 +182,6 @@ const en: Dictionary = {
       SKU_TAKEN: 'This SKU is already in use.',
       EMAIL_NOT_VERIFIED:
         'Confirm your email address to place an order. We sent you a confirmation link.',
-      LAST_ADMIN: 'At least one active administrator must remain.',
     },
     coupon: {
       NOT_FOUND: 'This discount code does not exist.',

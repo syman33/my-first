@@ -6,6 +6,7 @@ import { localeOf, sendNotification } from './notification.service'
 import {
   passwordChangedEmail,
   passwordResetEmail,
+  staffInviteEmail,
   verifyEmailEmail,
   welcomeEmail,
 } from './templates/auth'
@@ -81,6 +82,27 @@ export function registerAccountNotificationHandlers(): void {
         passwordResetEmail(locale, {
           name: user.name,
           resetUrl: unsealSecret(event.payload.sealedResetUrl),
+        }),
+    })
+  })
+
+  registerOutboxHandler('STAFF_INVITED', async (event) => {
+    const user = await loadUser(event.payload.userId)
+    if (!user || user.status !== 'ACTIVE') return
+    const locale = localeOf(event.payload.locale)
+    await sendNotification({
+      outboxEventId: event.id,
+      userId: user.id,
+      channel: 'EMAIL',
+      template: 'staff-invite',
+      locale,
+      recipient: user.email,
+      data: { name: user.name, invitedBy: event.payload.invitedByName },
+      render: () =>
+        staffInviteEmail(locale, {
+          name: user.name,
+          inviterName: event.payload.invitedByName,
+          setupUrl: unsealSecret(event.payload.sealedSetupUrl),
         }),
     })
   })

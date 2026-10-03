@@ -13,6 +13,16 @@ import { Permission, type RoleKey } from '@/generated/prisma/enums'
 
 export const ALL_PERMISSIONS = Object.values(Permission) as Permission[]
 
+/**
+ * Never effective for the STAFF role, even if stored on it: whoever manages
+ * staff accounts and role permissions could otherwise promote themselves.
+ */
+export const ADMIN_ONLY_PERMISSIONS: readonly Permission[] = ['ADMIN_USERS_MANAGE']
+
+export function isGrantableToStaff(permission: Permission): boolean {
+  return !ADMIN_ONLY_PERMISSIONS.includes(permission)
+}
+
 export interface Principal {
   id: string
   role: RoleKey
@@ -29,7 +39,8 @@ export function hasPermission(
 ): boolean {
   if (!principal) return false
   if (principal.role === 'ADMIN') return true
-  if (principal.role === 'STAFF') return principal.permissions.includes(permission)
+  if (principal.role === 'STAFF')
+    return isGrantableToStaff(permission) && principal.permissions.includes(permission)
   return false
 }
 
@@ -38,7 +49,7 @@ export function effectivePermissions(
   rolePermissions: readonly Permission[],
 ): Permission[] {
   if (role === 'ADMIN') return [...ALL_PERMISSIONS]
-  if (role === 'STAFF') return [...new Set(rolePermissions)]
+  if (role === 'STAFF') return [...new Set(rolePermissions)].filter(isGrantableToStaff)
   return []
 }
 

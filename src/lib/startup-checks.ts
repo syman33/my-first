@@ -5,6 +5,13 @@ import { logger } from '@/lib/logger'
 /** Domain reserved for development seed accounts (never valid in production). */
 export const DEV_ACCOUNT_DOMAIN = 'velora.local'
 
+/** Production and staging: development accounts and shortcuts are refused. */
+export function isProductionLike(): boolean {
+  const appEnv =
+    process.env.APP_ENV ?? (process.env.NODE_ENV === 'production' ? 'production' : 'development')
+  return appEnv === 'production' || appEnv === 'staging'
+}
+
 /**
  * Production/staging safety checks run at startup. Findings are logged at
  * error level for the operator; they are never exposed over HTTP.

@@ -19,7 +19,7 @@ import {
 } from '@/lib/errors'
 import { logger } from '@/lib/logger'
 import { generateToken, hashToken, sealSecret } from '@/lib/security/tokens'
-import { DEV_ACCOUNT_DOMAIN } from '@/lib/startup-checks'
+import { DEV_ACCOUNT_DOMAIN, isProductionLike } from '@/lib/startup-checks'
 import { addHours } from '@/utils/time'
 import { enqueueEvent } from '@/services/events/outbox.service'
 import { invalidateUserSessions } from './session.service'
@@ -53,12 +53,6 @@ function appUrl(path: string): string {
 
 function toLocale(value: string): Locale {
   return value === 'en' ? 'en' : 'ar'
-}
-
-function isProductionLike(): boolean {
-  const appEnv =
-    process.env.APP_ENV ?? (process.env.NODE_ENV === 'production' ? 'production' : 'development')
-  return appEnv === 'production' || appEnv === 'staging'
 }
 
 class InvalidTokenError extends AppError {

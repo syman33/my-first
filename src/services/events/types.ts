@@ -10,6 +10,12 @@ export interface OutboxPayloads {
   EMAIL_VERIFICATION_REQUESTED: { userId: string; locale: 'ar' | 'en'; sealedVerifyUrl: string }
   PASSWORD_RESET_REQUESTED: { userId: string; locale: 'ar' | 'en'; sealedResetUrl: string }
   PASSWORD_CHANGED: { userId: string; locale: 'ar' | 'en' }
+  STAFF_INVITED: {
+    userId: string
+    locale: 'ar' | 'en'
+    invitedByName: string
+    sealedSetupUrl: string
+  }
   ORDER_PLACED: { orderId: string }
   PAYMENT_SUCCEEDED: { orderId: string; paymentId: string }
   PAYMENT_FAILED: { orderId: string; paymentId: string }
@@ -39,5 +45,6 @@ export interface OutboxEventInput<T extends OutboxEventType = OutboxEventType> {
 export const SEALED_PAYLOAD_KEYS = [
   'sealedVerifyUrl',
   'sealedResetUrl',
+  'sealedSetupUrl',
   'sealedUnsubscribeUrl',
 ] as const

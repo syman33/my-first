@@ -21,6 +21,8 @@ export function PostAction({
   confirmYes,
   cancelLabel,
   genericError,
+  method = 'POST',
+  doneMessage,
 }: {
   locale: Locale
   endpoint: string
@@ -32,19 +34,25 @@ export function PostAction({
   confirmYes?: string
   cancelLabel: string
   genericError: string
+  method?: 'POST' | 'PATCH' | 'PUT'
+  /** Shown after success, for actions whose effect is not visible on the page (e.g. an email sent). */
+  doneMessage?: string
 }) {
   const router = useRouter()
   const [, startTransition] = useTransition()
   const [confirming, setConfirming] = useState(false)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState(false)
 
   async function run() {
     setPending(true)
     setError(null)
+    setDone(false)
     try {
-      await apiRequest(endpoint, { body, locale })
+      await apiRequest(endpoint, { body, locale, method })
       setConfirming(false)
+      setDone(true)
       startTransition(() => router.refresh())
     } catch (caught) {
       setError(caught instanceof ApiClientError ? caught.message : genericError)
@@ -56,6 +64,11 @@ export function PostAction({
   return (
     <div className="space-y-2">
       {error ? <Alert tone="error">{error}</Alert> : null}
+      {done && doneMessage ? (
+        <p role="status" className="text-xs text-success">
+          {doneMessage}
+        </p>
+      ) : null}
       {confirming && confirmText ? (
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label={label}>
           <span className="text-sm">{confirmText}</span>

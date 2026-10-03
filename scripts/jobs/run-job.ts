@@ -8,7 +8,11 @@
  *
  * The same functions back the /api/cron/* endpoints; jobs are idempotent.
  */
-import { loadEnvConfig } from '@next/env'
+import { createRequire } from 'node:module'
+import type * as NextEnv from '@next/env'
+
+// @next/env is a CommonJS bundle whose named exports Node's ESM loader cannot detect.
+const { loadEnvConfig } = createRequire(import.meta.url)('@next/env') as typeof NextEnv
 
 loadEnvConfig(process.cwd())
 

@@ -43,6 +43,23 @@ const t = {
         'If you did not request this, no action is needed and your current password stays unchanged.',
     },
   },
+  invite: {
+    ar: {
+      subject: 'دعوة للانضمام إلى فريق فيلورا',
+      body: (inviter: string) =>
+        `دعاك ${inviter} للانضمام إلى فريق العمل في لوحة إدارة فيلورا. اختر كلمة مرور لحسابك من الرابط أدناه، وصلاحيته 72 ساعة ويُستخدم مرة واحدة.`,
+      cta: 'اختيار كلمة المرور',
+      ignore: 'إذا لم تكن تتوقع هذه الدعوة فتجاهل هذه الرسالة، ولن يُفعَّل الحساب.',
+    },
+    en: {
+      subject: 'You are invited to the VÉLORA team',
+      body: (inviter: string) =>
+        `${inviter} has invited you to the VÉLORA back office. Choose a password for your account using the link below; it is valid for 72 hours and can be used once.`,
+      cta: 'Choose a password',
+      ignore:
+        'If you were not expecting this invitation, ignore this email and the account stays unused.',
+    },
+  },
   changed: {
     ar: {
       subject: 'تم تغيير كلمة المرور',
@@ -115,4 +132,23 @@ export function passwordChangedEmail(locale: Locale, data: { name: string }): Re
     paragraph(greeting) + paragraph(c.body) + paragraph(c.warn),
   )
   return { subject: c.subject, html, text: `${greeting}\n\n${c.body}\n\n${c.warn}` }
+}
+
+export function staffInviteEmail(
+  locale: Locale,
+  data: { name: string; inviterName: string; setupUrl: string },
+): RenderedEmail {
+  const c = t.invite[locale]
+  const greeting = t.welcome[locale].greeting(data.name)
+  const body = c.body(data.inviterName)
+  const html = layout(
+    locale,
+    c.subject,
+    paragraph(greeting) + paragraph(body) + button(data.setupUrl, c.cta) + paragraph(c.ignore),
+  )
+  return {
+    subject: c.subject,
+    html,
+    text: `${greeting}\n\n${body}\n\n${data.setupUrl}\n\n${c.ignore}`,
+  }
 }
