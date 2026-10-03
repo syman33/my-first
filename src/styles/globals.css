@@ -26,6 +26,8 @@
   --color-success-soft: #e5efe8;
   --color-warning: #8a5a12;
   --color-warning-soft: #f6ecda;
+  /* Chart series (validated: lightness band, chroma floor, ≥3:1 on white — dataviz checks). */
+  --color-chart-1: #a0672a;
 
   --font-sans: var(--font-sans-latin), var(--font-sans-arabic), 'Helvetica Neue', Arial, sans-serif;
   --font-display: var(--font-display-latin), var(--font-display-arabic), Georgia, serif;

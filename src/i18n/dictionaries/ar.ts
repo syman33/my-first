@@ -6,6 +6,7 @@
  * Copy is written natively in Arabic (not machine-translated from English).
  */
 import { account } from '../sections/account'
+import { admin } from '../sections/admin'
 import { auth } from '../sections/auth'
 import { cart } from '../sections/cart'
 import { checkout } from '../sections/checkout'
@@ -19,6 +20,7 @@ const ar = {
   store: store.ar,
   cart: cart.ar,
   checkout: checkout.ar,
+  admin: admin.ar,
   meta: {
     siteName: 'فيلورا',
     defaultTitle: 'VÉLORA | شنط وساعات وإكسسوارات للنساء والرجال',

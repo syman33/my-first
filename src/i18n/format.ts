@@ -82,3 +82,24 @@ export function formatDateTime(date: Date | string, locale: Locale): string {
 export function formatDayLabel(date: Date | string, locale: Locale): string {
   return dateFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(date))
 }
+
+/** Signed change in basis points: 1250 → "+12.5%", -300 → "−3%" (locale digits and signs). */
+export function formatSignedPercent(bps: number, locale: Locale): string {
+  return numberFormat(locale, {
+    style: 'percent',
+    maximumFractionDigits: 1,
+    signDisplay: 'exceptZero',
+  }).format(bps / 10_000)
+}
+
+/** "Sun, 28 Sep" style label for tooltips and tables. */
+export function formatDayFull(date: Date | string, locale: Locale): string {
+  return dateFormat(locale, { weekday: 'short', day: 'numeric', month: 'short' }).format(
+    new Date(date),
+  )
+}
+
+/** Compact counts for tiles: 1,284 / 12.9K. */
+export function formatCompactNumber(value: number, locale: Locale): string {
+  return numberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(value)
+}
