@@ -166,22 +166,7 @@ export function apiHandler<P>(
           return schema.parse(Object.fromEntries(req.nextUrl.searchParams.entries()))
         },
         afterResponse(task) {
-          try {
-            after(async () => {
-              try {
-                await task()
-              } catch (error) {
-                logger.error('api.after_response_failed', { requestId, error })
-              }
-            })
-          } catch (error) {
-            // Outside a Next.js request scope (e.g. unit/integration tests): the
-            // background job/cron will perform the work instead.
-            logger.debug('api.after_unavailable', {
-              requestId,
-              reason: error instanceof Error ? error.message : String(error),
-            })
-          }
+          runAfterResponse(task, requestId)
         },
       }
 
@@ -200,5 +185,27 @@ export function apiHandler<P>(
       response.headers.set('x-request-id', requestId)
       return response
     }
+  }
+}
+
+/**
+ * Run work after the response is sent. Outside a Next.js request scope
+ * (tests, scripts) `after()` is unavailable; the cron/outbox job performs the
+ * same work later, so it is safe to skip there.
+ */
+export function runAfterResponse(task: () => Promise<unknown>, requestId?: string): void {
+  try {
+    after(async () => {
+      try {
+        await task()
+      } catch (error) {
+        logger.error('api.after_response_failed', { requestId, error })
+      }
+    })
+  } catch (error) {
+    logger.debug('api.after_unavailable', {
+      requestId,
+      reason: error instanceof Error ? error.message : String(error),
+    })
   }
 }

@@ -8,6 +8,7 @@
 import { account } from '../sections/account'
 import { auth } from '../sections/auth'
 import { cart } from '../sections/cart'
+import { checkout } from '../sections/checkout'
 import { orders } from '../sections/orders'
 import { store } from '../sections/store'
 
@@ -17,6 +18,7 @@ const ar = {
   orders: orders.ar,
   store: store.ar,
   cart: cart.ar,
+  checkout: checkout.ar,
   meta: {
     siteName: 'فيلورا',
     defaultTitle: 'VÉLORA | شنط وساعات وإكسسوارات للنساء والرجال',

@@ -58,7 +58,7 @@ export function SiteFooter({
   const page = (slug: string) => `/${locale}/${slug}` as Route
 
   return (
-    <footer className="bg-ink text-paper [--logo-accent:var(--color-champagne)]">
+    <footer className="bg-ink text-paper [--logo-accent:var(--color-champagne)] print:hidden">
       <div className="container-luxe grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:py-20">
         <div>
           <Link href={`/${locale}`} className="inline-block" aria-label={`VÉLORA — ${t.company}`}>

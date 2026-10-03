@@ -71,7 +71,7 @@ export default async function LocaleRootLayout({ children, params }: LayoutProps
         </a>
         {simulatedPayments ? (
           <p
-            className="bg-warning-soft px-4 py-1.5 text-center text-xs text-warning"
+            className="bg-warning-soft px-4 py-1.5 text-center text-xs text-warning print:hidden"
             data-testid="test-mode-banner"
           >
             {dict.common.testModeBanner}

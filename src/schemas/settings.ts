@@ -93,6 +93,8 @@ export const checkoutSettingsSchema = z.object({
     .default(['PENDING', 'CONFIRMED']),
   maxQuantityPerItem: z.number().int().min(1).max(99).default(10),
   requireEmailVerification: z.boolean().default(false),
+  /** How long stock stays reserved for an unpaid online order before it is released. */
+  reservationMinutes: z.number().int().min(5).max(1_440).default(30),
 })
 
 export const PAYMENT_METHODS = ['MADA', 'CARD', 'APPLE_PAY', 'STC_PAY', 'COD'] as const

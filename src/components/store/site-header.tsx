@@ -48,7 +48,7 @@ export function SiteHeader({
   const cartLabel =
     counts.cart > 0 ? interpolate(dict.nav.cartCount, { count: counts.cart }) : dict.nav.cart
   return (
-    <header className="sticky top-0 z-40 bg-ivory/95 backdrop-blur supports-[backdrop-filter]:bg-ivory/85">
+    <header className="sticky top-0 z-40 bg-ivory/95 backdrop-blur supports-[backdrop-filter]:bg-ivory/85 print:hidden">
       {announcement ? (
         <p className="bg-ink px-4 py-2 text-center text-xs tracking-wide text-paper">
           {announcement}

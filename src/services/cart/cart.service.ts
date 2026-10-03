@@ -12,6 +12,12 @@ import {
   type ShippingMethodCode,
 } from '@/lib/pricing/order-totals'
 import { categoryAncestry, getActiveCategories } from '@/services/catalog/category.service'
+import type {
+  CheckoutSettings,
+  CodSettings,
+  ShippingSettings,
+  TaxSettings,
+} from '@/schemas/settings'
 import { getSettings } from '@/services/settings/settings.service'
 import type { CartLineView, CartView, ShopperOwner } from '@/types/cart'
 import { addDays } from '@/utils/time'
@@ -67,7 +73,7 @@ const lineSelect = {
   },
 } satisfies Prisma.CartItemSelect
 
-type LineRow = Prisma.CartItemGetPayload<{ select: typeof lineSelect }>
+export type LineRow = Prisma.CartItemGetPayload<{ select: typeof lineSelect }>
 
 function isPurchasable(row: LineRow, now: Date): boolean {
   const product = row.variant.product
@@ -89,16 +95,34 @@ export interface CartOptions {
   couponCode?: string | null
 }
 
-/** Read the bag with live prices, stock checks and server-computed totals. */
-export async function getCartView(
+/** Everything checkout needs beyond the view: raw rows and the resolved coupon. */
+export interface CartPricing {
+  view: CartView
+  rows: LineRow[]
+  coupon: { couponId: string; code: string } | null
+  settings: {
+    shipping: ShippingSettings
+    tax: TaxSettings
+    cod: CodSettings
+    checkout: CheckoutSettings
+  }
+}
+
+/**
+ * Price the bag with a given database client: `prisma` for display, the
+ * order transaction's client at checkout (so prices, stock and coupon rules
+ * are re-read inside the transaction that creates the order).
+ */
+export async function priceCart(
+  db: DbClient,
   owner: ShopperOwner | null,
   locale: Locale,
   options: CartOptions = {},
-): Promise<CartView> {
+): Promise<CartPricing> {
   const now = options.now ?? new Date()
   const [cart, shipping, tax, cod, checkout, categories] = await Promise.all([
     owner
-      ? prisma.cart.findUnique({
+      ? db.cart.findUnique({
           where: ownerWhere(owner),
           select: {
             id: true,
@@ -107,10 +131,10 @@ export async function getCartView(
           },
         })
       : null,
-    getSettings('shipping'),
-    getSettings('tax'),
-    getSettings('cod'),
-    getSettings('checkout'),
+    getSettings('shipping', db),
+    getSettings('tax', db),
+    getSettings('cod', db),
+    getSettings('checkout', db),
     getActiveCategories(),
   ])
   const ar = locale === 'ar'
@@ -177,10 +201,15 @@ export async function getCartView(
     options.couponCode !== undefined ? options.couponCode : (cart?.couponCode ?? null)
   let couponFailure: CartView['couponIssue'] = null
   let couponRule = null
+  let coupon: CartPricing['coupon'] = null
   if (couponCode) {
-    const resolution = await resolveCoupon(couponCode, { userId: options.userId ?? null, now })
-    if (resolution.ok) couponRule = resolution.rule
-    else couponFailure = { code: couponCode, reason: resolution.reason }
+    const resolution = await resolveCoupon(couponCode, { userId: options.userId ?? null, now, db })
+    if (resolution.ok) {
+      couponRule = resolution.rule
+      coupon = { couponId: resolution.couponId, code: resolution.rule.code }
+    } else {
+      couponFailure = { code: couponCode, reason: resolution.reason }
+    }
   }
 
   const totals = calculateOrderTotals({
@@ -191,6 +220,7 @@ export async function getCartView(
     settings: { shipping, tax, cod },
   })
   if (totals.coupon && !totals.coupon.applied) {
+    coupon = null
     couponFailure = {
       code: totals.coupon.code,
       reason: totals.coupon.reason,
@@ -201,14 +231,28 @@ export async function getCartView(
   }
 
   return {
-    id: cart?.id ?? null,
-    lines,
-    totals,
-    couponCode,
-    couponIssue: couponFailure,
-    hasIssues: lines.some((line) => line.issue !== null),
-    maxQuantityPerItem: checkout.maxQuantityPerItem,
+    view: {
+      id: cart?.id ?? null,
+      lines,
+      totals,
+      couponCode,
+      couponIssue: couponFailure,
+      hasIssues: lines.some((line) => line.issue !== null),
+      maxQuantityPerItem: checkout.maxQuantityPerItem,
+    },
+    rows,
+    coupon,
+    settings: { shipping, tax, cod, checkout },
   }
+}
+
+/** Read the bag with live prices, stock checks and server-computed totals. */
+export async function getCartView(
+  owner: ShopperOwner | null,
+  locale: Locale,
+  options: CartOptions = {},
+): Promise<CartView> {
+  return (await priceCart(prisma, owner, locale, options)).view
 }
 
 // ---------------------------------------------------------------- mutations

@@ -38,8 +38,8 @@ export default async function AccountLayout({
   const base = `/${locale}/account`
 
   return (
-    <div className="container-luxe py-10 lg:py-14">
-      <header className="border-b border-line pb-8">
+    <div className="container-luxe py-10 lg:py-14 print:p-0">
+      <header className="border-b border-line pb-8 print:hidden">
         <p className="eyebrow">{t.title}</p>
         <h1 className="mt-3 font-display text-4xl text-ink lg:text-5xl">
           {interpolate(t.greeting, { name: session.user.name })}
@@ -55,7 +55,7 @@ export default async function AccountLayout({
         </div>
       )}
       <div className="mt-8 grid gap-8 lg:grid-cols-[14rem_1fr] lg:gap-16">
-        <aside>
+        <aside className="print:hidden">
           <AccountNav
             label={t.navLabel}
             items={[
