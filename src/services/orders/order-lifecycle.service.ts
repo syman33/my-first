@@ -291,3 +291,42 @@ export async function releaseExpiredReservations(
   if (released + failed > 0) logger.info('orders.reservations_released', { released, failed })
   return { released, failed }
 }
+
+/**
+ * Staff accept a cash-on-delivery order (usually after a confirmation call).
+ * Online orders are never confirmed by hand: only a verified payment does that.
+ */
+export async function confirmCodOrder(
+  orderId: string,
+  audit: AuditContext,
+  note?: string,
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const order = await lockOrder(tx, orderId)
+    if (order.paymentMethod !== 'COD') {
+      throw new AppError('CONFLICT', 'Online orders are confirmed by their payment', {
+        status: 409,
+      })
+    }
+    await confirmOrderInTx(tx, orderId, audit, note)
+  })
+}
+
+/** Clear an order's "needs attention" flag once staff have dealt with it (the reason is kept in the audit trail). */
+export async function resolveOrderAttention(
+  orderId: string,
+  note: string,
+  audit: AuditContext,
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const order = await lockOrder(tx, orderId)
+    if (!order.attentionReason) return
+    await tx.order.update({ where: { id: order.id }, data: { attentionReason: null } })
+    await recordAudit(tx, audit, {
+      action: 'order.attention_resolved',
+      entityType: 'order',
+      entityId: order.id,
+      metadata: { orderNumber: order.orderNumber, reason: order.attentionReason, note },
+    })
+  })
+}

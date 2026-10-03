@@ -46,14 +46,14 @@ export function AdminShell({
   }))
 
   return (
-    <div className="min-h-dvh bg-ivory lg:grid lg:grid-cols-[16rem_1fr]">
+    <div className="min-h-dvh bg-ivory lg:grid lg:grid-cols-[16rem_1fr] print:block print:bg-paper">
       <a
         href="#admin-main"
         className="sr-only z-50 bg-ink px-4 py-2 text-paper focus:not-sr-only focus:absolute focus:start-4 focus:top-4"
       >
         {t.skipToContent}
       </a>
-      <aside className="hidden bg-ink lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:overflow-y-auto">
+      <aside className="hidden bg-ink lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:overflow-y-auto print:hidden">
         <Link href="/admin" className="flex items-center gap-3 px-6 py-6 text-paper">
           <Monogram className="size-8 text-champagne" />
           <span className="font-display text-lg tracking-[0.3em]">VÉLORA</span>
@@ -63,7 +63,7 @@ export function AdminShell({
         </div>
       </aside>
       <div className="flex min-w-0 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-paper/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-paper/80 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-line bg-paper/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-paper/80 lg:px-8 print:hidden">
           <div className="flex items-center gap-2">
             <AdminMobileNav
               groups={groups}
@@ -87,11 +87,15 @@ export function AdminShell({
           />
         </header>
         {testMode ? (
-          <p className="border-b border-warning/30 bg-warning-soft px-4 py-2 text-xs text-warning lg:px-8">
+          <p className="border-b border-warning/30 bg-warning-soft px-4 py-2 text-xs text-warning lg:px-8 print:hidden">
             {t.testMode}
           </p>
         ) : null}
-        <main id="admin-main" tabIndex={-1} className="flex-1 px-4 py-8 focus:outline-none lg:px-8">
+        <main
+          id="admin-main"
+          tabIndex={-1}
+          className="flex-1 px-4 py-8 focus:outline-none lg:px-8 print:p-0"
+        >
           {children}
         </main>
       </div>

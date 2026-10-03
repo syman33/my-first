@@ -1,5 +1,5 @@
 import 'server-only'
-import type { DbClient } from '@/db/client'
+import { prisma, type DbClient } from '@/db/client'
 import { transactionWithRetry } from '@/db/transaction'
 import { AppError, NotFoundError, OrderNotFoundError, ValidationError } from '@/lib/errors'
 import {
@@ -365,10 +365,19 @@ export interface ReturnRefundQuote {
   manual: boolean
 }
 
+interface QuotableReturn {
+  id: string
+  items: {
+    orderItemId: string
+    quantity: number
+    orderItem: { quantity: number; lineTotal: number; taxAmount: number }
+  }[]
+}
+
 async function quoteInTx(
   tx: DbClient,
-  request: Awaited<ReturnType<typeof lockReturn>>['request'],
-  order: Awaited<ReturnType<typeof lockReturn>>['order'],
+  request: QuotableReturn,
+  order: { id: string; pricesIncludeTax: boolean },
 ): Promise<ReturnRefundQuote> {
   // Units of each line refunded by earlier completed returns.
   const completed = await tx.returnItem.groupBy({
@@ -407,12 +416,20 @@ async function quoteInTx(
   }
 }
 
-/** The refund a received return would get (for the admin completion form). */
+/**
+ * The refund a received return would get, for the admin completion form.
+ * A plain read (no locks): completing the return recomputes it under lock.
+ */
 export async function quoteReturnRefund(returnId: string): Promise<ReturnRefundQuote> {
-  return transactionWithRetry('return.quote', async (tx) => {
-    const { request, order } = await lockReturn(tx, returnId)
-    return quoteInTx(tx, request, order)
+  const request = await prisma.returnRequest.findUnique({
+    where: { id: returnId },
+    include: {
+      items: { include: { orderItem: true } },
+      order: { select: { id: true, pricesIncludeTax: true } },
+    },
   })
+  if (!request) throw new ReturnNotFoundError()
+  return quoteInTx(prisma, request, request.order)
 }
 
 export type ReturnCompletion =

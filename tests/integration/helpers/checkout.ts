@@ -220,3 +220,11 @@ export async function deliveredOrder(
   await markDelivered(confirmed.orderId, audit)
   return { ...confirmed, audit }
 }
+
+/** A signed-in back-office user (STAFF has the seeded staff permissions; ADMIN has all). */
+export async function signedInStaff(email: string, role: 'STAFF' | 'ADMIN' = 'STAFF') {
+  const user = await createUser({ email, role, passwordHash: await hashPassword(PASSWORD) })
+  const client = new TestClient()
+  expect((await client.call(login, { body: { email, password: PASSWORD } })).status).toBe(200)
+  return { user, client, audit: { actor: { id: user.id, type: role } } satisfies AuditContext }
+}
