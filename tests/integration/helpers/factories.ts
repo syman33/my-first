@@ -18,7 +18,17 @@ export async function ensureRoles(): Promise<void> {
         key: 'STAFF',
         nameAr: 'موظف',
         nameEn: 'Staff',
-        permissions: ['DASHBOARD_VIEW', 'ORDERS_VIEW', 'ORDERS_MANAGE', 'PRODUCTS_VIEW', 'INVENTORY_VIEW', 'INVENTORY_ADJUST', 'CUSTOMERS_VIEW', 'REVIEWS_MODERATE', 'MESSAGES_VIEW'],
+        permissions: [
+          'DASHBOARD_VIEW',
+          'ORDERS_VIEW',
+          'ORDERS_MANAGE',
+          'PRODUCTS_VIEW',
+          'INVENTORY_VIEW',
+          'INVENTORY_ADJUST',
+          'CUSTOMERS_VIEW',
+          'REVIEWS_MODERATE',
+          'MESSAGES_VIEW',
+        ],
       },
       { key: 'ADMIN', nameAr: 'مدير', nameEn: 'Administrator', permissions: [] },
     ],
@@ -26,7 +36,15 @@ export async function ensureRoles(): Promise<void> {
   })
 }
 
-export async function createUser(overrides: { email?: string; role?: RoleKey; name?: string; passwordHash?: string; status?: 'ACTIVE' | 'SUSPENDED' } = {}) {
+export async function createUser(
+  overrides: {
+    email?: string
+    role?: RoleKey
+    name?: string
+    passwordHash?: string
+    status?: 'ACTIVE' | 'SUSPENDED'
+  } = {},
+) {
   await ensureRoles()
   return prisma.user.create({
     data: {
@@ -39,7 +57,14 @@ export async function createUser(overrides: { email?: string; role?: RoleKey; na
   })
 }
 
-export async function createCategory(overrides: { slug?: string; parentId?: string; kind?: 'STANDARD' | 'GENDER' | 'NEW_ARRIVALS' | 'BEST_SELLERS' | 'OFFERS'; gender?: Gender } = {}) {
+export async function createCategory(
+  overrides: {
+    slug?: string
+    parentId?: string
+    kind?: 'STANDARD' | 'GENDER' | 'NEW_ARRIVALS' | 'BEST_SELLERS' | 'OFFERS'
+    gender?: Gender
+  } = {},
+) {
   const slug = overrides.slug ?? unique('cat')
   return prisma.category.create({
     data: {
@@ -62,7 +87,12 @@ export interface ProductFixtureOptions {
   gender?: Gender
   nameEn?: string
   nameAr?: string
-  variants?: Array<{ stock: number; price?: number | null; nameEn?: string; colorFamily?: 'BLACK' | 'BROWN' | 'BEIGE' | 'GOLD' }>
+  variants?: Array<{
+    stock: number
+    price?: number | null
+    nameEn?: string
+    colorFamily?: 'BLACK' | 'BROWN' | 'BEIGE' | 'GOLD'
+  }>
 }
 
 /** Product with one or more variants, each with an inventory row. */

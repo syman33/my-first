@@ -22,7 +22,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
-      exclude: ['src/generated/**', 'src/**/*.d.ts', 'src/app/**/page.tsx', 'src/app/**/layout.tsx'],
+      exclude: [
+        'src/generated/**',
+        'src/**/*.d.ts',
+        'src/app/**/page.tsx',
+        'src/app/**/layout.tsx',
+      ],
       reporter: ['text-summary', 'html'],
     },
     projects: [
@@ -33,7 +38,10 @@ export default defineConfig({
           include: ['tests/unit/**/*.test.ts'],
           environment: 'node',
           // Deliberately unreachable: unit tests must never touch a database.
-          env: { ...sharedTestEnv, DATABASE_URL: 'postgresql://unit:unit@127.0.0.1:1/unit_tests_do_not_touch_db' },
+          env: {
+            ...sharedTestEnv,
+            DATABASE_URL: 'postgresql://unit:unit@127.0.0.1:1/unit_tests_do_not_touch_db',
+          },
         },
       },
       {

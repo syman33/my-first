@@ -35,7 +35,12 @@ describe('environment validation', () => {
   })
 
   it('refuses development-only providers in production unless explicitly allowed', () => {
-    const prod = { ...base, NODE_ENV: 'production', NEXT_PUBLIC_APP_URL: 'https://velora.sa', CRON_SECRET: 'c'.repeat(40) }
+    const prod = {
+      ...base,
+      NODE_ENV: 'production',
+      NEXT_PUBLIC_APP_URL: 'https://velora.sa',
+      CRON_SECRET: 'c'.repeat(40),
+    }
     expect(() => parseEnv(prod)).toThrow(/mock payment provider is development-only/)
     expect(() => parseEnv({ ...prod, ALLOW_MOCK_PROVIDERS_IN_PRODUCTION: 'true' })).not.toThrow()
   })

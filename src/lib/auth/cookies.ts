@@ -36,7 +36,9 @@ export interface CookieAttributes {
 }
 
 /** Attributes for authentication/guest cookies: never readable by JavaScript. */
-export function secureCookieAttributes(options: { maxAgeSeconds?: number; expires?: Date } = {}): CookieAttributes {
+export function secureCookieAttributes(
+  options: { maxAgeSeconds?: number; expires?: Date } = {},
+): CookieAttributes {
   return {
     httpOnly: true,
     secure: cookiesAreSecure(),

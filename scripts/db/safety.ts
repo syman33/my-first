@@ -15,7 +15,9 @@ export function assertDisposableDatabase(databaseUrl: string | undefined): strin
     throw new Error('DATABASE_URL is not a valid URL')
   }
   if (!/_(test|e2e)$/.test(name)) {
-    throw new Error(`Refusing to reset database "${name}": only databases ending in _test or _e2e may be reset by test tooling.`)
+    throw new Error(
+      `Refusing to reset database "${name}": only databases ending in _test or _e2e may be reset by test tooling.`,
+    )
   }
   if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging') {
     throw new Error(`Refusing to reset a database while APP_ENV=${process.env.APP_ENV}.`)

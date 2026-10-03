@@ -39,12 +39,12 @@ export function otherLocale(locale: Locale): Locale {
 }
 
 /** Pick a localized field pair, e.g. `localized(product, 'name', 'ar')` → `product.nameAr`. */
-export function pickLocalized<T extends Record<string, unknown>, K extends string>(
-  record: T & Record<`${K}Ar` | `${K}En`, string | null>,
+export function pickLocalized<K extends string>(
+  record: { [P in `${K}Ar` | `${K}En`]: string | null },
   key: K,
   locale: Locale,
 ): string {
-  const primary = locale === 'ar' ? record[`${key}Ar`] : record[`${key}En`]
-  const fallback = locale === 'ar' ? record[`${key}En`] : record[`${key}Ar`]
-  return (primary as string | null) || (fallback as string | null) || ''
+  const arabic = record[`${key}Ar`]
+  const english = record[`${key}En`]
+  return (locale === 'ar' ? arabic || english : english || arabic) || ''
 }

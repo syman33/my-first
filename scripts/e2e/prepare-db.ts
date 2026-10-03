@@ -13,7 +13,8 @@ const databaseUrl = process.env.DATABASE_URL
 const target = assertDisposableDatabase(databaseUrl)
 console.log(`[e2e] preparing ${target}`)
 
-const run = (args: string[]) => execFileSync('npx', args, { stdio: 'inherit', env: { ...process.env, SEED_PROFILE: 'demo' } })
+const run = (args: string[]) =>
+  execFileSync('npx', args, { stdio: 'inherit', env: { ...process.env, SEED_PROFILE: 'demo' } })
 
 run(['prisma', 'migrate', 'deploy'])
 

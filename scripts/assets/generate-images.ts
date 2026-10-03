@@ -50,7 +50,10 @@ async function productImages(): Promise<number> {
       seen.add(key)
       await writeWebp(
         variantImagePath(product, variant),
-        renderProductSvg({ kind: product.art, color: variant.hex, metal: variant.metal, accent: variant.accent }, { ...PRODUCT_IMAGE_SIZE, smallWatch }),
+        renderProductSvg(
+          { kind: product.art, color: variant.hex, metal: variant.metal, accent: variant.accent },
+          { ...PRODUCT_IMAGE_SIZE, smallWatch },
+        ),
       )
       count++
     }
@@ -99,7 +102,14 @@ async function editorialImages(): Promise<number> {
   const charm = find('VLR-JWL-CHARM')
   const sultan = find('VLR-JWL-SULTAN')
 
-  const scenes: Array<{ file: string; width: number; height: number; placements: Placement[]; backdrop?: [string, string]; extras?: string }> = [
+  const scenes: Array<{
+    file: string
+    width: number
+    height: number
+    placements: Placement[]
+    backdrop?: [string, string]
+    extras?: string
+  }> = [
     {
       file: '/images/editorial/hero-desktop.webp',
       width: 2400,
@@ -181,9 +191,24 @@ async function editorialImages(): Promise<number> {
         { input: art(rima, 1), x: 600, y: 1260, scale: 0.46 },
       ],
     },
-    { file: '/images/categories/wallets.webp', width: 1200, height: 1500, placements: [{ input: art(atlas, 1), x: 600, y: 780, scale: 1 }] },
-    { file: '/images/categories/belts.webp', width: 1200, height: 1500, placements: [{ input: art(noble, 0), x: 600, y: 780, scale: 1 }] },
-    { file: '/images/categories/sunglasses.webp', width: 1200, height: 1500, placements: [{ input: art(falcon, 0), x: 600, y: 780, scale: 1 }] },
+    {
+      file: '/images/categories/wallets.webp',
+      width: 1200,
+      height: 1500,
+      placements: [{ input: art(atlas, 1), x: 600, y: 780, scale: 1 }],
+    },
+    {
+      file: '/images/categories/belts.webp',
+      width: 1200,
+      height: 1500,
+      placements: [{ input: art(noble, 0), x: 600, y: 780, scale: 1 }],
+    },
+    {
+      file: '/images/categories/sunglasses.webp',
+      width: 1200,
+      height: 1500,
+      placements: [{ input: art(falcon, 0), x: 600, y: 780, scale: 1 }],
+    },
     {
       file: '/images/categories/jewellery.webp',
       width: 1200,
@@ -247,7 +272,13 @@ async function editorialImages(): Promise<number> {
       height: 1080,
       backdrop: bg,
       placements: [
-        { input: art(product, variant), x: 540, y: 560, scale: scale ?? 0.78, smallWatch: product.gender === 'WOMEN' },
+        {
+          input: art(product, variant),
+          x: 540,
+          y: 560,
+          scale: scale ?? 0.78,
+          smallWatch: product.gender === 'WOMEN',
+        },
       ],
     })
   })

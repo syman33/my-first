@@ -4,7 +4,8 @@
  * Vitest's per-project `env` is not applied).
  */
 export const integrationDatabaseUrl =
-  process.env.TEST_DATABASE_URL ?? 'postgresql://velora:velora_dev_password@localhost:5432/velora_test'
+  process.env.TEST_DATABASE_URL ??
+  'postgresql://velora:velora_dev_password@localhost:5432/velora_test'
 
 export const sharedTestEnv = {
   NODE_ENV: 'test',

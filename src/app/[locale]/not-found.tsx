@@ -13,7 +13,9 @@ export default async function LocaleNotFound() {
       <p className="eyebrow" data-latin>
         404
       </p>
-      <h1 className="font-display mt-4 text-4xl text-ink md:text-5xl">{dict.errors.notFoundTitle}</h1>
+      <h1 className="mt-4 font-display text-4xl text-ink md:text-5xl">
+        {dict.errors.notFoundTitle}
+      </h1>
       <p className="mt-4 max-w-md text-muted">{dict.errors.notFoundBody}</p>
       <Link
         href={`/${locale}`}

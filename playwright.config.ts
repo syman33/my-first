@@ -15,7 +15,9 @@ const chromiumExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
 export const e2eServerEnv = {
   NODE_ENV: 'production',
   APP_ENV: 'test',
-  DATABASE_URL: process.env.E2E_DATABASE_URL ?? 'postgresql://velora:velora_dev_password@localhost:5432/velora_e2e',
+  DATABASE_URL:
+    process.env.E2E_DATABASE_URL ??
+    'postgresql://velora:velora_dev_password@localhost:5432/velora_e2e',
   NEXT_PUBLIC_APP_URL: BASE_URL,
   AUTH_SECRET: 'e2e-auth-secret-that-is-long-enough-for-hmac-0123456789',
   CRON_SECRET: 'e2e-cron-secret-0123456789abcdef0123456789abcdef',
@@ -38,7 +40,9 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   timeout: 60_000,
   expect: { timeout: 10_000 },
-  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
+  reporter: process.env.CI
+    ? [['github'], ['html', { open: 'never' }]]
+    : [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: BASE_URL,
     trace: 'retain-on-failure',
@@ -64,8 +68,16 @@ export default defineConfig({
     },
     ...(allBrowsers
       ? [
-          { name: 'firefox', testMatch: /.*\.(smoke|cross)\.spec\.ts/, use: { ...devices['Desktop Firefox'] } },
-          { name: 'webkit', testMatch: /.*\.(smoke|cross)\.spec\.ts/, use: { ...devices['Desktop Safari'] } },
+          {
+            name: 'firefox',
+            testMatch: /.*\.(smoke|cross)\.spec\.ts/,
+            use: { ...devices['Desktop Firefox'] },
+          },
+          {
+            name: 'webkit',
+            testMatch: /.*\.(smoke|cross)\.spec\.ts/,
+            use: { ...devices['Desktop Safari'] },
+          },
         ]
       : []),
   ],

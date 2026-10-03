@@ -112,19 +112,30 @@ export class UnauthorizedError extends AppError {
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message = 'You do not have permission to perform this action', code: ErrorCode = 'FORBIDDEN') {
+  constructor(
+    message = 'You do not have permission to perform this action',
+    code: ErrorCode = 'FORBIDDEN',
+  ) {
     super(code, message, { status: 403 })
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(code: ErrorCode = 'NOT_FOUND', message = 'Resource not found', details?: Record<string, unknown>) {
+  constructor(
+    code: ErrorCode = 'NOT_FOUND',
+    message = 'Resource not found',
+    details?: Record<string, unknown>,
+  ) {
     super(code, message, { status: 404, details })
   }
 }
 
 export class ConflictError extends AppError {
-  constructor(code: ErrorCode = 'CONFLICT', message = 'Conflict', details?: Record<string, unknown>) {
+  constructor(
+    code: ErrorCode = 'CONFLICT',
+    message = 'Conflict',
+    details?: Record<string, unknown>,
+  ) {
     super(code, message, { status: 409, details })
   }
 }
@@ -163,7 +174,13 @@ export class InsufficientStockError extends AppError {
   constructor(shortages: StockShortage[]) {
     super('INSUFFICIENT_STOCK', 'Insufficient stock', {
       status: 409,
-      details: { items: shortages.map((s) => ({ variantId: s.variantId, sku: s.sku, available: s.available })) },
+      details: {
+        items: shortages.map((s) => ({
+          variantId: s.variantId,
+          sku: s.sku,
+          available: s.available,
+        })),
+      },
     })
     this.shortages = shortages
   }
@@ -185,7 +202,10 @@ export type CouponFailureReason = (typeof COUPON_FAILURE_REASONS)[number]
 export class InvalidCouponError extends AppError {
   readonly reason: CouponFailureReason
   constructor(reason: CouponFailureReason, details: Record<string, unknown> = {}) {
-    super('INVALID_COUPON', `Coupon rejected: ${reason}`, { status: 422, details: { reason, ...details } })
+    super('INVALID_COUPON', `Coupon rejected: ${reason}`, {
+      status: 422,
+      details: { reason, ...details },
+    })
     this.reason = reason
   }
 }

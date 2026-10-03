@@ -1,5 +1,12 @@
 import 'server-only'
-import { createCipheriv, createDecipheriv, createHmac, hkdfSync, randomBytes, timingSafeEqual } from 'node:crypto'
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  hkdfSync,
+  randomBytes,
+  timingSafeEqual,
+} from 'node:crypto'
 
 /**
  * Opaque-token helpers.
@@ -12,7 +19,8 @@ import { createCipheriv, createDecipheriv, createHmac, hkdfSync, randomBytes, ti
 
 function authSecret(): string {
   const secret = process.env.AUTH_SECRET
-  if (!secret || secret.length < 32) throw new Error('AUTH_SECRET must be configured (min 32 characters)')
+  if (!secret || secret.length < 32)
+    throw new Error('AUTH_SECRET must be configured (min 32 characters)')
   return secret
 }
 
@@ -46,7 +54,12 @@ export function sealSecret(plaintext: string): string {
   const cipher = createCipheriv('aes-256-gcm', sealingKey(), iv)
   const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()])
   const tag = cipher.getAuthTag()
-  return [SEAL_VERSION, iv.toString('base64url'), tag.toString('base64url'), encrypted.toString('base64url')].join('.')
+  return [
+    SEAL_VERSION,
+    iv.toString('base64url'),
+    tag.toString('base64url'),
+    encrypted.toString('base64url'),
+  ].join('.')
 }
 
 export function unsealSecret(sealed: string): string {
@@ -54,12 +67,17 @@ export function unsealSecret(sealed: string): string {
   if (version !== SEAL_VERSION || !iv || !tag || !data) throw new Error('Malformed sealed secret')
   const decipher = createDecipheriv('aes-256-gcm', sealingKey(), Buffer.from(iv, 'base64url'))
   decipher.setAuthTag(Buffer.from(tag, 'base64url'))
-  return Buffer.concat([decipher.update(Buffer.from(data, 'base64url')), decipher.final()]).toString('utf8')
+  return Buffer.concat([
+    decipher.update(Buffer.from(data, 'base64url')),
+    decipher.final(),
+  ]).toString('utf8')
 }
 
 /** Stable hash of a JSON-serialisable value (idempotency request fingerprints). */
 export function fingerprint(value: unknown): string {
-  return createHmac('sha256', 'velora-request-fingerprint').update(stableStringify(value)).digest('hex')
+  return createHmac('sha256', 'velora-request-fingerprint')
+    .update(stableStringify(value))
+    .digest('hex')
 }
 
 function stableStringify(value: unknown): string {

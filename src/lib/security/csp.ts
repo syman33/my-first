@@ -27,7 +27,12 @@ export interface CspOptions {
 export function buildContentSecurityPolicy(options: CspOptions): string {
   const { nonce, isDev } = options
   const img = ["'self'", 'data:', 'blob:', ...(options.imageOrigins ?? [])]
-  const scripts = ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'", ...(options.analyticsOrigins ?? [])]
+  const scripts = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    "'strict-dynamic'",
+    ...(options.analyticsOrigins ?? []),
+  ]
   if (isDev) scripts.push("'unsafe-eval'")
   const connect = ["'self'", ...(options.analyticsOrigins ?? [])]
   if (isDev) connect.push('ws:', 'wss:')

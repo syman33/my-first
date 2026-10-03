@@ -82,10 +82,24 @@ export function getTimeZoneOffsetMinutes(date: Date, timeZone: string = STORE_TI
 
 /** The UTC instant corresponding to a wall-clock time in `timeZone`. */
 export function zonedTimeToUtc(
-  wall: { year: number; month: number; day: number; hour?: number; minute?: number; second?: number },
+  wall: {
+    year: number
+    month: number
+    day: number
+    hour?: number
+    minute?: number
+    second?: number
+  },
   timeZone: string = STORE_TIME_ZONE,
 ): Date {
-  const guess = Date.UTC(wall.year, wall.month - 1, wall.day, wall.hour ?? 0, wall.minute ?? 0, wall.second ?? 0)
+  const guess = Date.UTC(
+    wall.year,
+    wall.month - 1,
+    wall.day,
+    wall.hour ?? 0,
+    wall.minute ?? 0,
+    wall.second ?? 0,
+  )
   // Two passes handle zones with DST transitions; Riyadh itself has a fixed +03:00 offset.
   let offset = getTimeZoneOffsetMinutes(new Date(guess), timeZone)
   let result = guess - offset * MINUTE
@@ -118,7 +132,11 @@ export function parseStoreDateKey(key: string, timeZone: string = STORE_TIME_ZON
   const month = Number(mo)
   const day = Number(d)
   const probe = new Date(Date.UTC(year, month - 1, day))
-  if (probe.getUTCFullYear() !== year || probe.getUTCMonth() !== month - 1 || probe.getUTCDate() !== day) {
+  if (
+    probe.getUTCFullYear() !== year ||
+    probe.getUTCMonth() !== month - 1 ||
+    probe.getUTCDate() !== day
+  ) {
     throw new RangeError(`Invalid calendar date: ${key}`)
   }
   return zonedTimeToUtc({ year, month, day }, timeZone)

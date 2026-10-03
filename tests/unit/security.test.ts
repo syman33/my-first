@@ -5,7 +5,11 @@ import { redact } from '@/lib/logger'
 
 describe('Content-Security-Policy', () => {
   it('is strict in production: nonce + strict-dynamic, no eval, no framing', () => {
-    const csp = buildContentSecurityPolicy({ nonce: 'abc123', isDev: false, upgradeInsecureRequests: true })
+    const csp = buildContentSecurityPolicy({
+      nonce: 'abc123',
+      isDev: false,
+      upgradeInsecureRequests: true,
+    })
     expect(csp).toContain("script-src 'self' 'nonce-abc123' 'strict-dynamic'")
     expect(csp).not.toContain('unsafe-eval')
     expect(csp).toContain("frame-ancestors 'none'")
@@ -16,9 +20,13 @@ describe('Content-Security-Policy', () => {
   })
 
   it('allows eval only in development and adds configured image origins', () => {
-    const csp = buildContentSecurityPolicy({ nonce: 'n', isDev: true, imageOrigins: ['https://cdn.example.com'] })
+    const csp = buildContentSecurityPolicy({
+      nonce: 'n',
+      isDev: true,
+      imageOrigins: ['https://cdn.example.com'],
+    })
     expect(csp).toContain("'unsafe-eval'")
-    expect(csp).toContain('img-src \'self\' data: blob: https://cdn.example.com')
+    expect(csp).toContain("img-src 'self' data: blob: https://cdn.example.com")
   })
 
   it('generates unpredictable nonces', () => {
@@ -32,25 +40,67 @@ describe('CSRF origin check', () => {
   const allowed = ['https://velora.sa']
 
   it('allows safe methods regardless of origin', () => {
-    expect(checkRequestOrigin({ method: 'GET', originHeader: 'https://evil.test', refererHeader: null, allowedOrigins: allowed }).ok).toBe(true)
+    expect(
+      checkRequestOrigin({
+        method: 'GET',
+        originHeader: 'https://evil.test',
+        refererHeader: null,
+        allowedOrigins: allowed,
+      }).ok,
+    ).toBe(true)
   })
 
   it('accepts same-origin unsafe requests', () => {
-    expect(checkRequestOrigin({ method: 'POST', originHeader: 'https://velora.sa', refererHeader: null, allowedOrigins: allowed })).toEqual({ ok: true })
+    expect(
+      checkRequestOrigin({
+        method: 'POST',
+        originHeader: 'https://velora.sa',
+        refererHeader: null,
+        allowedOrigins: allowed,
+      }),
+    ).toEqual({ ok: true })
   })
 
   it('rejects cross-site unsafe requests', () => {
-    expect(checkRequestOrigin({ method: 'DELETE', originHeader: 'https://evil.test', refererHeader: null, allowedOrigins: allowed })).toEqual({
+    expect(
+      checkRequestOrigin({
+        method: 'DELETE',
+        originHeader: 'https://evil.test',
+        refererHeader: null,
+        allowedOrigins: allowed,
+      }),
+    ).toEqual({
       ok: false,
       reason: 'origin-mismatch',
     })
     // A lookalike subdomain is still a different origin.
-    expect(checkRequestOrigin({ method: 'POST', originHeader: 'https://velora.sa.evil.test', refererHeader: null, allowedOrigins: allowed }).ok).toBe(false)
+    expect(
+      checkRequestOrigin({
+        method: 'POST',
+        originHeader: 'https://velora.sa.evil.test',
+        refererHeader: null,
+        allowedOrigins: allowed,
+      }).ok,
+    ).toBe(false)
   })
 
   it('falls back to Referer and rejects requests with neither header', () => {
-    expect(checkRequestOrigin({ method: 'POST', originHeader: null, refererHeader: 'https://velora.sa/ar/cart', allowedOrigins: allowed }).ok).toBe(true)
-    expect(checkRequestOrigin({ method: 'POST', originHeader: 'null', refererHeader: null, allowedOrigins: allowed })).toEqual({
+    expect(
+      checkRequestOrigin({
+        method: 'POST',
+        originHeader: null,
+        refererHeader: 'https://velora.sa/ar/cart',
+        allowedOrigins: allowed,
+      }).ok,
+    ).toBe(true)
+    expect(
+      checkRequestOrigin({
+        method: 'POST',
+        originHeader: 'null',
+        refererHeader: null,
+        allowedOrigins: allowed,
+      }),
+    ).toEqual({
       ok: false,
       reason: 'missing-origin',
     })
@@ -68,7 +118,13 @@ describe('log redaction', () => {
     const out = redact({
       password: 'hunter2',
       passwordHash: '$argon2id$...',
-      nested: { authorization: 'Bearer x', apiKey: 'k', token: 't', cardNumber: '4111111111111111', cvv: '123' },
+      nested: {
+        authorization: 'Bearer x',
+        apiKey: 'k',
+        token: 't',
+        cardNumber: '4111111111111111',
+        cvv: '123',
+      },
       email: 'layla@example.com',
       phone: '+966500000000',
       orderNumber: 'VLR-2026-000001',

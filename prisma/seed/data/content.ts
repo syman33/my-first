@@ -25,8 +25,10 @@ export const pages: SeedPage[] = [
     slug: 'about',
     titleAr: 'من نحن',
     titleEn: 'About VÉLORA',
-    seoDescriptionAr: 'فيلورا دار سعودية للأزياء والإكسسوارات الفاخرة، تجمع الحرفية العالمية بذائقة محلية معاصرة.',
-    seoDescriptionEn: 'VÉLORA is a Saudi house of luxury bags and accessories, pairing international craftsmanship with a contemporary local eye.',
+    seoDescriptionAr:
+      'فيلورا دار سعودية للأزياء والإكسسوارات الفاخرة، تجمع الحرفية العالمية بذائقة محلية معاصرة.',
+    seoDescriptionEn:
+      'VÉLORA is a Saudi house of luxury bags and accessories, pairing international craftsmanship with a contemporary local eye.',
     contentAr: `## أناقة تُروى بالتفاصيل
 
 وُلدت فيلورا من فكرة بسيطة: أن القطعة الجميلة حقاً هي تلك التي تبقى معك لسنوات، وتزداد قيمتها كلما رافقتك في يومك.
@@ -62,7 +64,8 @@ That your piece arrives exactly as you saw it — and that we are as present aft
     slug: 'shipping',
     titleAr: 'الشحن والتوصيل',
     titleEn: 'Shipping & Delivery',
-    seoDescriptionAr: 'تعرّف على خيارات الشحن والتوصيل ورسومه ومدته إلى جميع مدن المملكة العربية السعودية.',
+    seoDescriptionAr:
+      'تعرّف على خيارات الشحن والتوصيل ورسومه ومدته إلى جميع مدن المملكة العربية السعودية.',
     seoDescriptionEn: 'Delivery options, fees and timelines for orders across Saudi Arabia.',
     contentAr: `## التوصيل داخل المملكة
 
@@ -114,7 +117,8 @@ As soon as your order ships, its tracking number appears on the order page in yo
     titleAr: 'الاستبدال والاسترجاع',
     titleEn: 'Returns & Exchanges',
     seoDescriptionAr: 'سياسة الاستبدال والاسترجاع في فيلورا وخطوات طلب الإرجاع واسترداد المبلغ.',
-    seoDescriptionEn: 'VÉLORA returns and exchanges policy, how to request a return and how refunds work.',
+    seoDescriptionEn:
+      'VÉLORA returns and exchanges policy, how to request a return and how refunds work.',
     contentAr: `## مدة الإرجاع
 
 يمكنك طلب إرجاع المنتجات خلال **{{returnWindowDays}} أيام** من تاريخ الاستلام.
@@ -276,20 +280,26 @@ export const faqItems = [
   {
     questionAr: 'كم تستغرق مدة التوصيل؟',
     questionEn: 'How long does delivery take?',
-    answerAr: 'الشحن العادي يستغرق {{standardDays}} أيام عمل، والشحن السريع {{expressDays}} أيام عمل من تاريخ الشحن.',
-    answerEn: 'Standard delivery takes {{standardDays}} business days and express {{expressDays}} business days from dispatch.',
+    answerAr:
+      'الشحن العادي يستغرق {{standardDays}} أيام عمل، والشحن السريع {{expressDays}} أيام عمل من تاريخ الشحن.',
+    answerEn:
+      'Standard delivery takes {{standardDays}} business days and express {{expressDays}} business days from dispatch.',
   },
   {
     questionAr: 'هل الشحن مجاني؟',
     questionEn: 'Is shipping free?',
-    answerAr: 'نعم، الشحن العادي مجاني للطلبات التي تبلغ {{freeShippingThreshold}} أو أكثر بعد الخصم.',
-    answerEn: 'Yes — standard shipping is free on orders of {{freeShippingThreshold}} or more after discounts.',
+    answerAr:
+      'نعم، الشحن العادي مجاني للطلبات التي تبلغ {{freeShippingThreshold}} أو أكثر بعد الخصم.',
+    answerEn:
+      'Yes — standard shipping is free on orders of {{freeShippingThreshold}} or more after discounts.',
   },
   {
     questionAr: 'ما طرق الدفع المتاحة؟',
     questionEn: 'Which payment methods do you accept?',
-    answerAr: 'نقبل بطاقات مدى وفيزا وماستركارد وApple Pay، إضافة إلى الدفع عند الاستلام للطلبات المؤهلة.',
-    answerEn: 'We accept mada, Visa, Mastercard and Apple Pay, plus cash on delivery for eligible orders.',
+    answerAr:
+      'نقبل بطاقات مدى وفيزا وماستركارد وApple Pay، إضافة إلى الدفع عند الاستلام للطلبات المؤهلة.',
+    answerEn:
+      'We accept mada, Visa, Mastercard and Apple Pay, plus cash on delivery for eligible orders.',
   },
   {
     questionAr: 'هل يتوفر الدفع عند الاستلام؟',
@@ -301,36 +311,45 @@ export const faqItems = [
     questionAr: 'كيف أتتبع طلبي؟',
     questionEn: 'How do I track my order?',
     answerAr: 'من «حسابي ← طلباتي» ستجد حالة الطلب ورقم التتبع بمجرد شحنه.',
-    answerEn: 'Under “My account → Orders” you will find your order status and tracking number once it ships.',
+    answerEn:
+      'Under “My account → Orders” you will find your order status and tracking number once it ships.',
   },
   {
     questionAr: 'هل يمكنني إلغاء طلبي؟',
     questionEn: 'Can I cancel my order?',
-    answerAr: 'يمكنك إلغاء الطلب من صفحة الطلب قبل شحنه. بعد الشحن يمكنك طلب إرجاع وفق سياسة الاسترجاع.',
-    answerEn: 'You can cancel from the order page before it ships. After shipment you can request a return under our returns policy.',
+    answerAr:
+      'يمكنك إلغاء الطلب من صفحة الطلب قبل شحنه. بعد الشحن يمكنك طلب إرجاع وفق سياسة الاسترجاع.',
+    answerEn:
+      'You can cancel from the order page before it ships. After shipment you can request a return under our returns policy.',
   },
   {
     questionAr: 'ما مدة الإرجاع؟',
     questionEn: 'What is your return window?',
-    answerAr: 'يمكنك طلب الإرجاع خلال {{returnWindowDays}} أيام من الاستلام، بشرط أن يكون المنتج بحالته الأصلية.',
-    answerEn: 'You can request a return within {{returnWindowDays}} days of delivery, provided the item is in original condition.',
+    answerAr:
+      'يمكنك طلب الإرجاع خلال {{returnWindowDays}} أيام من الاستلام، بشرط أن يكون المنتج بحالته الأصلية.',
+    answerEn:
+      'You can request a return within {{returnWindowDays}} days of delivery, provided the item is in original condition.',
   },
   {
     questionAr: 'هل منتجاتكم أصلية؟',
     questionEn: 'Are your products authentic?',
     answerAr: 'نعم، جميع منتجاتنا من تشكيلاتنا ومن ورش وموردين معتمدين، وتصلك مع تغليفها الأصلي.',
-    answerEn: 'Yes. Every piece comes from our own collections or approved workshops and suppliers, in its original packaging.',
+    answerEn:
+      'Yes. Every piece comes from our own collections or approved workshops and suppliers, in its original packaging.',
   },
   {
     questionAr: 'هل أحتاج إلى حساب لإتمام الشراء؟',
     questionEn: 'Do I need an account to check out?',
-    answerAr: 'يمكنك التصفح وإضافة المنتجات إلى السلة دون حساب، ونطلب تسجيل الدخول عند إتمام الطلب لحماية طلبك ومتابعته بسهولة.',
-    answerEn: 'You can browse and add to your bag without an account; we ask you to sign in at checkout so your order is protected and easy to follow.',
+    answerAr:
+      'يمكنك التصفح وإضافة المنتجات إلى السلة دون حساب، ونطلب تسجيل الدخول عند إتمام الطلب لحماية طلبك ومتابعته بسهولة.',
+    answerEn:
+      'You can browse and add to your bag without an account; we ask you to sign in at checkout so your order is protected and easy to follow.',
   },
   {
     questionAr: 'هل أحصل على فاتورة ضريبية؟',
     questionEn: 'Will I receive a tax invoice?',
     answerAr: 'يمكنك عرض فاتورة طلبك وطباعتها في أي وقت من صفحة الطلب في حسابك.',
-    answerEn: 'You can view and print your order invoice at any time from the order page in your account.',
+    answerEn:
+      'You can view and print your order invoice at any time from the order page in your account.',
   },
 ]

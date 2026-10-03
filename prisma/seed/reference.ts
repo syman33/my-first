@@ -55,9 +55,24 @@ export const DEFAULT_STAFF_PERMISSIONS: Permission[] = [
 export async function seedReference(prisma: PrismaClient): Promise<void> {
   // Roles
   const roles = [
-    { key: 'CUSTOMER' as const, nameAr: 'عميل', nameEn: 'Customer', permissions: [] as Permission[] },
-    { key: 'STAFF' as const, nameAr: 'موظف', nameEn: 'Staff', permissions: DEFAULT_STAFF_PERMISSIONS },
-    { key: 'ADMIN' as const, nameAr: 'مدير', nameEn: 'Administrator', permissions: ALL_PERMISSIONS },
+    {
+      key: 'CUSTOMER' as const,
+      nameAr: 'عميل',
+      nameEn: 'Customer',
+      permissions: [] as Permission[],
+    },
+    {
+      key: 'STAFF' as const,
+      nameAr: 'موظف',
+      nameEn: 'Staff',
+      permissions: DEFAULT_STAFF_PERMISSIONS,
+    },
+    {
+      key: 'ADMIN' as const,
+      nameAr: 'مدير',
+      nameEn: 'Administrator',
+      permissions: ALL_PERMISSIONS,
+    },
   ]
   for (const role of roles) {
     await prisma.role.upsert({ where: { key: role.key }, create: role, update: {} })
@@ -73,9 +88,13 @@ export async function seedReference(prisma: PrismaClient): Promise<void> {
   }
 
   // Categories (parents first).
-  const ordered = [...categories].sort((a, b) => Number(Boolean(a.parent)) - Number(Boolean(b.parent)))
+  const ordered = [...categories].sort(
+    (a, b) => Number(Boolean(a.parent)) - Number(Boolean(b.parent)),
+  )
   for (const category of ordered) {
-    const parent = category.parent ? await prisma.category.findUnique({ where: { slug: category.parent } }) : null
+    const parent = category.parent
+      ? await prisma.category.findUnique({ where: { slug: category.parent } })
+      : null
     await prisma.category.upsert({
       where: { slug: category.slug },
       create: {
@@ -101,7 +120,10 @@ export async function seedReference(prisma: PrismaClient): Promise<void> {
     offers: '/images/editorial/promo-offers.webp',
   }
   for (const [slug, imageUrl] of Object.entries(imageFallbacks)) {
-    await prisma.category.updateMany({ where: { slug, imageUrl: `/images/categories/${slug}.webp` }, data: { imageUrl } })
+    await prisma.category.updateMany({
+      where: { slug, imageUrl: `/images/categories/${slug}.webp` },
+      data: { imageUrl },
+    })
   }
 
   // CMS pages.
@@ -123,6 +145,8 @@ export async function seedReference(prisma: PrismaClient): Promise<void> {
   }
 
   if ((await prisma.faqItem.count()) === 0) {
-    await prisma.faqItem.createMany({ data: faqItems.map((item, index) => ({ ...item, sortOrder: index })) })
+    await prisma.faqItem.createMany({
+      data: faqItems.map((item, index) => ({ ...item, sortOrder: index })),
+    })
   }
 }

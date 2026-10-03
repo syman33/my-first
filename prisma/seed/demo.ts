@@ -46,13 +46,18 @@ export async function seedDemo(prisma: PrismaClient, now: Date = new Date()): Pr
 
   // Products, variants, images, inventory (+ INITIAL ledger rows)
   for (const product of products) {
-    if (await prisma.product.findUnique({ where: { sku: product.sku }, select: { id: true } })) continue
+    if (await prisma.product.findUnique({ where: { sku: product.sku }, select: { id: true } }))
+      continue
     const category = categoryBySlug.get(product.category)
     if (!category) throw new Error(`Seed category missing: ${product.category}`)
-    const parent = category.parentId ? categoryRows.find((c) => c.id === category.parentId) : undefined
+    const parent = category.parentId
+      ? categoryRows.find((c) => c.id === category.parentId)
+      : undefined
     const brand = brands.find((b) => b.slug === product.brand)
     const basePrice = sarToHalalas(product.price)
-    const effective = product.variants.map((v) => (v.price !== undefined ? sarToHalalas(v.price) : basePrice))
+    const effective = product.variants.map((v) =>
+      v.price !== undefined ? sarToHalalas(v.price) : basePrice,
+    )
     const publishedAt = addDays(now, -product.ageDays)
     const seedCategory = seedCategories.find((c) => c.slug === product.category)
 
@@ -158,7 +163,8 @@ export async function seedDemo(prisma: PrismaClient, now: Date = new Date()): Pr
             colorHex: variant.hex,
             size: variant.size ?? null,
             price: variant.price !== undefined ? sarToHalalas(variant.price) : null,
-            compareAtPrice: variant.compareAt !== undefined ? sarToHalalas(variant.compareAt) : null,
+            compareAtPrice:
+              variant.compareAt !== undefined ? sarToHalalas(variant.compareAt) : null,
             imageId: imageIdByColor.get(colorKey(variant)) ?? null,
             isDefault: variant === firstVariant,
             sortOrder: index,
@@ -198,7 +204,8 @@ export async function seedDemo(prisma: PrismaClient, now: Date = new Date()): Pr
   // Demo customers with addresses.
   const customerHash = await hashPassword(DEMO_CUSTOMER_PASSWORD)
   for (const customer of customers) {
-    if (await prisma.user.findUnique({ where: { email: customer.email }, select: { id: true } })) continue
+    if (await prisma.user.findUnique({ where: { email: customer.email }, select: { id: true } }))
+      continue
     const joined = addDays(now, -customer.joinedDaysAgo)
     await prisma.user.create({
       data: {
@@ -231,8 +238,11 @@ export async function seedDemo(prisma: PrismaClient, now: Date = new Date()): Pr
 
   // Coupons.
   for (const coupon of coupons) {
-    if (await prisma.coupon.findUnique({ where: { code: coupon.code }, select: { id: true } })) continue
-    const scopedCategories = (coupon.categorySlugs ?? []).map((slug) => categoryBySlug.get(slug)?.id).filter((id): id is string => !!id)
+    if (await prisma.coupon.findUnique({ where: { code: coupon.code }, select: { id: true } }))
+      continue
+    const scopedCategories = (coupon.categorySlugs ?? [])
+      .map((slug) => categoryBySlug.get(slug)?.id)
+      .filter((id): id is string => !!id)
     await prisma.coupon.create({
       data: {
         code: coupon.code,
@@ -241,14 +251,17 @@ export async function seedDemo(prisma: PrismaClient, now: Date = new Date()): Pr
         type: coupon.type,
         value: coupon.type === 'PERCENTAGE' ? coupon.value * 100 : sarToHalalas(coupon.value),
         minOrderAmount: coupon.minOrderSar !== undefined ? sarToHalalas(coupon.minOrderSar) : null,
-        maxDiscountAmount: coupon.maxDiscountSar !== undefined ? sarToHalalas(coupon.maxDiscountSar) : null,
+        maxDiscountAmount:
+          coupon.maxDiscountSar !== undefined ? sarToHalalas(coupon.maxDiscountSar) : null,
         usageLimit: coupon.usageLimit ?? null,
         usageLimitPerUser: coupon.usageLimitPerUser ?? null,
         startsAt: coupon.startsInDays !== undefined ? addDays(now, coupon.startsInDays) : null,
         expiresAt: coupon.expiresInDays !== undefined ? addDays(now, coupon.expiresInDays) : null,
         scope: coupon.scope ?? 'ALL',
         isActive: coupon.isActive,
-        categories: scopedCategories.length ? { create: scopedCategories.map((categoryId) => ({ categoryId })) } : undefined,
+        categories: scopedCategories.length
+          ? { create: scopedCategories.map((categoryId) => ({ categoryId })) }
+          : undefined,
       },
     })
   }
@@ -256,7 +269,10 @@ export async function seedDemo(prisma: PrismaClient, now: Date = new Date()): Pr
   // Banners.
   if ((await prisma.banner.count()) === 0) {
     for (const banner of banners) {
-      const { startsInDays, endsInDays, ...data } = banner as typeof banner & { startsInDays?: number; endsInDays?: number }
+      const { startsInDays, endsInDays, ...data } = banner as typeof banner & {
+        startsInDays?: number
+        endsInDays?: number
+      }
       await prisma.banner.create({
         data: {
           ...data,

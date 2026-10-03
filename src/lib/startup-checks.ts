@@ -17,7 +17,8 @@ export async function reportInsecureProductionState(): Promise<void> {
     if (devAccounts > 0) {
       logger.error('security.dev_accounts_present', {
         count: devAccounts,
-        remedy: 'Suspend or delete @velora.local accounts and create a real administrator with `npm run admin:create`.',
+        remedy:
+          'Suspend or delete @velora.local accounts and create a real administrator with `npm run admin:create`.',
       })
     }
   } catch (error) {

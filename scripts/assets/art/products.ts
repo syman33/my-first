@@ -147,7 +147,9 @@ function bagMini(ctx: Ctx): string {
     const t = i / 26
     const x = 430 + (770 - 430) * t
     const y = 700 - Math.sin(Math.PI * t) * 360
-    links.push(`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="11" ry="7" fill="none" stroke="url(#metal)" stroke-width="5" transform="rotate(${(Math.cos(Math.PI * t) * -60).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`)
+    links.push(
+      `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="11" ry="7" fill="none" stroke="url(#metal)" stroke-width="5" transform="rotate(${(Math.cos(Math.PI * t) * -60).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`,
+    )
   }
   const body = rr(410, 700, 380, 320, 46)
   return `${floor(600, 1045, 240, 28)}
@@ -275,7 +277,13 @@ function bagMessenger(ctx: Ctx): string {
 
 // ---------------------------------------------------------------- Watches
 
-function watchHead(ctx: Ctx, cx: number, cy: number, r: number, opts: { chrono?: boolean; minimal?: boolean; date?: boolean }): string {
+function watchHead(
+  ctx: Ctx,
+  cx: number,
+  cy: number,
+  r: number,
+  opts: { chrono?: boolean; minimal?: boolean; date?: boolean },
+): string {
   const ticks: string[] = []
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2
@@ -324,9 +332,20 @@ function watchHead(ctx: Ctx, cx: number, cy: number, r: number, opts: { chrono?:
   </g>`
 }
 
-function leatherStrap(ctx: Ctx, cx: number, top: number, bottom: number, width: number, holes: boolean): string {
+function leatherStrap(
+  ctx: Ctx,
+  cx: number,
+  top: number,
+  bottom: number,
+  width: number,
+  holes: boolean,
+): string {
   const holeMarks = holes
-    ? Array.from({ length: 5 }, (_, i) => `<circle cx="${cx}" cy="${bottom - 70 - i * 44}" r="6" fill="${darken(ctx.c, 0.5)}"/>`).join('')
+    ? Array.from(
+        { length: 5 },
+        (_, i) =>
+          `<circle cx="${cx}" cy="${bottom - 70 - i * 44}" r="6" fill="${darken(ctx.c, 0.5)}"/>`,
+      ).join('')
     : ''
   return `<path d="${rr(cx - width / 2, top, width, bottom - top, 22)}" fill="url(#leatherSide)"/>
   ${stitch(`M${cx - width / 2 + 12} ${top + 20}V${bottom - 20}M${cx + width / 2 - 12} ${top + 20}V${bottom - 20}`, ctx, 2)}
@@ -372,7 +391,10 @@ function watchChrono(ctx: Ctx): string {
 function watchMesh(ctx: Ctx): string {
   const mesh = (top: number, bottom: number) => {
     const lines: string[] = []
-    for (let y = top; y < bottom; y += 7) lines.push(`<line x1="530" y1="${y}" x2="670" y2="${y + 5}" stroke="${ctx.m[2]}" stroke-width="1.4" opacity="0.55"/>`)
+    for (let y = top; y < bottom; y += 7)
+      lines.push(
+        `<line x1="530" y1="${y}" x2="670" y2="${y + 5}" stroke="${ctx.m[2]}" stroke-width="1.4" opacity="0.55"/>`,
+      )
     return `<rect x="530" y="${top}" width="140" height="${bottom - top}" rx="12" fill="url(#metalV)"/>${lines.join('')}`
   }
   return `${floor(600, 1240, 170, 24, 0.22)}
@@ -384,8 +406,19 @@ function watchMesh(ctx: Ctx): string {
 
 // ---------------------------------------------------------------- Wallets
 
-function cardEdges(x: number, y: number, w: number, count: number, gap: number, colors: string[]): string {
-  return Array.from({ length: count }, (_, i) => `<path d="${rr(x + i * 8, y + i * gap, w - i * 16, 60, 10)}" fill="${colors[i % colors.length]}"/>`).join('')
+function cardEdges(
+  x: number,
+  y: number,
+  w: number,
+  count: number,
+  gap: number,
+  colors: string[],
+): string {
+  return Array.from(
+    { length: count },
+    (_, i) =>
+      `<path d="${rr(x + i * 8, y + i * gap, w - i * 16, 60, 10)}" fill="${colors[i % colors.length]}"/>`,
+  ).join('')
 }
 
 function walletBifold(ctx: Ctx): string {
@@ -416,7 +449,10 @@ function walletCard(ctx: Ctx): string {
 
 function walletLong(ctx: Ctx): string {
   const body = rr(270, 700, 660, 330, 40)
-  const teeth = Array.from({ length: 44 }, (_, i) => `<rect x="${300 + i * 14}" y="${709}" width="7" height="9" fill="url(#metal)"/>`).join('')
+  const teeth = Array.from(
+    { length: 44 },
+    (_, i) => `<rect x="${300 + i * 14}" y="${709}" width="7" height="9" fill="url(#metal)"/>`,
+  ).join('')
   return `${floor(600, 1060, 360, 30)}
   <path d="${body}" fill="url(#leather)"/>
   ${teeth}
@@ -447,7 +483,8 @@ function beltLoop(ctx: Ctx, width: number, slim: boolean): string {
   const cy = 760
   const rx = 330
   const ry = 130
-  const arc = (sweep: 0 | 1, r: { x: number; y: number }) => `M${cx - r.x} ${cy}A${r.x} ${r.y} 0 0 ${sweep} ${cx + r.x} ${cy}`
+  const arc = (sweep: 0 | 1, r: { x: number; y: number }) =>
+    `M${cx - r.x} ${cy}A${r.x} ${r.y} 0 0 ${sweep} ${cx + r.x} ${cy}`
   const buckleW = slim ? 104 : 136
   const buckleH = width + (slim ? 30 : 40)
   const bx = cx - 40
@@ -480,7 +517,9 @@ function beltChain(_ctx: Ctx): string {
     const x = 250 + 700 * t
     const y = 640 + Math.sin(Math.PI * t) * 320
     const angle = (Math.cos(Math.PI * t) * 42).toFixed(1)
-    links.push(`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="20" ry="12" fill="none" stroke="url(#metal)" stroke-width="7" transform="rotate(${i % 2 ? angle : Number(angle) + 90} ${x.toFixed(1)} ${y.toFixed(1)})"/>`)
+    links.push(
+      `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="20" ry="12" fill="none" stroke="url(#metal)" stroke-width="7" transform="rotate(${i % 2 ? angle : Number(angle) + 90} ${x.toFixed(1)} ${y.toFixed(1)})"/>`,
+    )
   }
   return `${floor(600, 1070, 380, 30, 0.2)}
   ${links.join('')}
@@ -489,7 +528,14 @@ function beltChain(_ctx: Ctx): string {
 
 // ---------------------------------------------------------------- Sunglasses
 
-function glasses(ctx: Ctx, lens: string, mirror: string, frameWidth: number, bridge: string, temples: string): string {
+function glasses(
+  ctx: Ctx,
+  lens: string,
+  mirror: string,
+  frameWidth: number,
+  bridge: string,
+  temples: string,
+): string {
   return `${floor(600, 1000, 360, 24, 0.2)}
   <g>
     <path d="${lens}" fill="url(#lens)" stroke="${ctx.c}" stroke-width="${frameWidth}" stroke-linejoin="round"/>
@@ -502,28 +548,62 @@ function glasses(ctx: Ctx, lens: string, mirror: string, frameWidth: number, bri
 
 function mirrorPath(d: string): string {
   // Mirror x around 600 for simple M/L/C/Q paths with absolute coordinates.
-  return d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (_m, x: string, y: string) => `${(1200 - Number(x)).toFixed(1)} ${y}`)
+  return d.replace(
+    /(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g,
+    (_m, x: string, y: string) => `${(1200 - Number(x)).toFixed(1)} ${y}`,
+  )
 }
 
 function sunCateye(ctx: Ctx): string {
-  const lens = 'M240 700 C 250 660, 330 640, 420 650 C 500 658, 560 680, 556 730 C 552 800, 480 850, 390 846 C 300 842, 250 790, 240 740 C 236 720, 230 700, 216 690 Z'
-  return glasses(ctx, lens, mirrorPath(lens), 26, `<path d="M556 712Q600 690 644 712" fill="none" stroke="${ctx.c}" stroke-width="20" stroke-linecap="round"/>`, `<path d="M226 694L196 684M974 694L1004 684" stroke="${ctx.c}" stroke-width="20" stroke-linecap="round"/>${vClasp(236, 700, 26, 18, ctx)}${vClasp(964, 700, 26, 18, ctx)}`)
+  const lens =
+    'M240 700 C 250 660, 330 640, 420 650 C 500 658, 560 680, 556 730 C 552 800, 480 850, 390 846 C 300 842, 250 790, 240 740 C 236 720, 230 700, 216 690 Z'
+  return glasses(
+    ctx,
+    lens,
+    mirrorPath(lens),
+    26,
+    `<path d="M556 712Q600 690 644 712" fill="none" stroke="${ctx.c}" stroke-width="20" stroke-linecap="round"/>`,
+    `<path d="M226 694L196 684M974 694L1004 684" stroke="${ctx.c}" stroke-width="20" stroke-linecap="round"/>${vClasp(236, 700, 26, 18, ctx)}${vClasp(964, 700, 26, 18, ctx)}`,
+  )
 }
 
 function sunAviator(ctx: Ctx): string {
-  const lens = 'M250 690 C 330 660, 470 662, 540 690 C 560 760, 530 850, 430 862 C 330 872, 262 810, 250 740 Z'
-  return glasses(ctx, lens, mirrorPath(lens), 9, `<path d="M540 690Q600 668 660 690M536 720Q600 704 664 720" fill="none" stroke="url(#metal)" stroke-width="8" stroke-linecap="round"/><ellipse cx="560" cy="780" rx="12" ry="18" fill="#ffffff" opacity="0.55"/><ellipse cx="640" cy="780" rx="12" ry="18" fill="#ffffff" opacity="0.55"/>`, `<path d="M252 694L210 690M948 694L990 690" stroke="url(#metal)" stroke-width="9" stroke-linecap="round"/>`)
+  const lens =
+    'M250 690 C 330 660, 470 662, 540 690 C 560 760, 530 850, 430 862 C 330 872, 262 810, 250 740 Z'
+  return glasses(
+    ctx,
+    lens,
+    mirrorPath(lens),
+    9,
+    `<path d="M540 690Q600 668 660 690M536 720Q600 704 664 720" fill="none" stroke="url(#metal)" stroke-width="8" stroke-linecap="round"/><ellipse cx="560" cy="780" rx="12" ry="18" fill="#ffffff" opacity="0.55"/><ellipse cx="640" cy="780" rx="12" ry="18" fill="#ffffff" opacity="0.55"/>`,
+    `<path d="M252 694L210 690M948 694L990 690" stroke="url(#metal)" stroke-width="9" stroke-linecap="round"/>`,
+  )
 }
 
 function sunRound(ctx: Ctx): string {
-  const lens = 'M400 620 C 490 620, 540 690, 540 760 C 540 840, 480 900, 400 900 C 320 900, 260 840, 260 760 C 260 690, 310 620, 400 620 Z'
-  return glasses(ctx, lens, mirrorPath(lens), 18, `<path d="M540 740Q560 700 600 700Q640 700 660 740" fill="none" stroke="url(#metal)" stroke-width="10" stroke-linecap="round"/>`, `<path d="M262 736L220 724M938 736L980 724" stroke="url(#metal)" stroke-width="10" stroke-linecap="round"/>`)
+  const lens =
+    'M400 620 C 490 620, 540 690, 540 760 C 540 840, 480 900, 400 900 C 320 900, 260 840, 260 760 C 260 690, 310 620, 400 620 Z'
+  return glasses(
+    ctx,
+    lens,
+    mirrorPath(lens),
+    18,
+    `<path d="M540 740Q560 700 600 700Q640 700 660 740" fill="none" stroke="url(#metal)" stroke-width="10" stroke-linecap="round"/>`,
+    `<path d="M262 736L220 724M938 736L980 724" stroke="url(#metal)" stroke-width="10" stroke-linecap="round"/>`,
+  )
 }
 
 function sunSquare(ctx: Ctx): string {
   const lens = rr(236, 640, 316, 240, 46)
   const mirror = rr(648, 640, 316, 240, 46)
-  return glasses(ctx, lens, mirror, 30, `<path d="M552 700Q600 680 648 700" fill="none" stroke="${ctx.c}" stroke-width="26" stroke-linecap="round"/>`, `<path d="M240 660L200 650M960 660L1000 650" stroke="${ctx.c}" stroke-width="26" stroke-linecap="round"/><rect x="226" y="650" width="22" height="10" rx="3" fill="url(#metal)"/><rect x="952" y="650" width="22" height="10" rx="3" fill="url(#metal)"/>`)
+  return glasses(
+    ctx,
+    lens,
+    mirror,
+    30,
+    `<path d="M552 700Q600 680 648 700" fill="none" stroke="${ctx.c}" stroke-width="26" stroke-linecap="round"/>`,
+    `<path d="M240 660L200 650M960 660L1000 650" stroke="${ctx.c}" stroke-width="26" stroke-linecap="round"/><rect x="226" y="650" width="22" height="10" rx="3" fill="url(#metal)"/><rect x="952" y="650" width="22" height="10" rx="3" fill="url(#metal)"/>`,
+  )
 }
 
 // ---------------------------------------------------------------- Jewellery & small accessories
@@ -535,7 +615,8 @@ function bangle(ctx: Ctx): string {
   const rx = 270
   const ry = 150
   const gap = 0.22 // radians either side of the front
-  const pt = (a: number) => `${(cx + Math.cos(a) * rx).toFixed(1)} ${(cy + Math.sin(a) * ry).toFixed(1)}`
+  const pt = (a: number) =>
+    `${(cx + Math.cos(a) * rx).toFixed(1)} ${(cy + Math.sin(a) * ry).toFixed(1)}`
   const front1 = Math.PI / 2 - gap
   const front2 = Math.PI / 2 + gap
   return `${floor(cx, cy + ry + 60, 320, 30, 0.22)}
@@ -632,13 +713,19 @@ const DRAWERS: Record<ArtKind, (ctx: Ctx) => string> = {
 /** Product artwork only (no backdrop), in the 1200×1500 design space. */
 export function productArt(input: ArtInput, smallWatch = false): { defs: string; body: string } {
   const ctx = ctxFor(input)
-  const body = input.kind === 'watch-leather' && smallWatch ? watchLeather(ctx, true) : DRAWERS[input.kind](ctx)
+  const body =
+    input.kind === 'watch-leather' && smallWatch
+      ? watchLeather(ctx, true)
+      : DRAWERS[input.kind](ctx)
   return { defs: defs(ctx), body }
 }
 
 export const DEFAULT_BACKDROP: [string, string] = ['#f4efe7', '#e3d9cb']
 
-export function renderProductSvg(input: ArtInput, options: SceneOptions & { smallWatch?: boolean } = {}): string {
+export function renderProductSvg(
+  input: ArtInput,
+  options: SceneOptions & { smallWatch?: boolean } = {},
+): string {
   const w = options.width ?? 1200
   const h = options.height ?? 1500
   const [top, bottom] = options.backdrop ?? DEFAULT_BACKDROP

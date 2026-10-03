@@ -8,9 +8,17 @@ import { z } from 'zod'
 
 const halalas = z.number().int().min(0).max(100_000_000)
 /** Treat blank form input as "not set". */
-const blankToUndefined = (value: unknown) => (typeof value === 'string' && value.trim() === '' ? undefined : value)
-const optionalText = (max: number) => z.preprocess(blankToUndefined, z.string().trim().max(max).optional())
-const optionalUrl = z.preprocess(blankToUndefined, z.url({ protocol: /^https$/ }).max(300).optional())
+const blankToUndefined = (value: unknown) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value
+const optionalText = (max: number) =>
+  z.preprocess(blankToUndefined, z.string().trim().max(max).optional())
+const optionalUrl = z.preprocess(
+  blankToUndefined,
+  z
+    .url({ protocol: /^https$/ })
+    .max(300)
+    .optional(),
+)
 
 export const storeSettingsSchema = z.object({
   nameAr: z.string().trim().min(1).max(80).default('فيلورا'),
@@ -80,7 +88,9 @@ export const ORDER_STATUSES_CUSTOMER_MAY_CANCEL = ['PENDING', 'CONFIRMED', 'PROC
 
 export const checkoutSettingsSchema = z.object({
   /** Order statuses in which a customer may cancel on their own (never after shipment). */
-  customerCancellableStatuses: z.array(z.enum(ORDER_STATUSES_CUSTOMER_MAY_CANCEL)).default(['PENDING', 'CONFIRMED']),
+  customerCancellableStatuses: z
+    .array(z.enum(ORDER_STATUSES_CUSTOMER_MAY_CANCEL))
+    .default(['PENDING', 'CONFIRMED']),
   maxQuantityPerItem: z.number().int().min(1).max(99).default(10),
   requireEmailVerification: z.boolean().default(false),
 })
@@ -89,7 +99,10 @@ export const PAYMENT_METHODS = ['MADA', 'CARD', 'APPLE_PAY', 'STC_PAY', 'COD'] a
 
 export const paymentSettingsSchema = z.object({
   /** Methods offered at checkout (further limited by what the configured provider supports). */
-  enabledMethods: z.array(z.enum(PAYMENT_METHODS)).min(1).default(['MADA', 'CARD', 'APPLE_PAY', 'COD']),
+  enabledMethods: z
+    .array(z.enum(PAYMENT_METHODS))
+    .min(1)
+    .default(['MADA', 'CARD', 'APPLE_PAY', 'COD']),
 })
 
 export const returnsSettingsSchema = z.object({

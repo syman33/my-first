@@ -5,9 +5,26 @@ import { formatDate, formatMoney } from '@/i18n/format'
 import { interpolate, plural } from '@/i18n'
 import { ERROR_CODES } from '@/lib/errors'
 
+const PLURAL_CATEGORIES = new Set(['zero', 'one', 'two', 'few', 'many', 'other'])
+
+/** CLDR plural forms legitimately differ per language (Arabic has six, English two). */
+function isPluralForms(value: object): boolean {
+  const keys = Object.keys(value)
+  return keys.includes('other') && keys.every((key) => PLURAL_CATEGORIES.has(key))
+}
+
 function leafPaths(value: unknown, prefix = ''): string[] {
   if (typeof value !== 'object' || value === null) return [prefix]
+  if (isPluralForms(value)) return [prefix]
   return Object.entries(value).flatMap(([k, v]) => leafPaths(v, prefix ? `${prefix}.${k}` : k))
+}
+
+function pluralFormPaths(value: unknown, prefix = ''): string[] {
+  if (typeof value !== 'object' || value === null) return []
+  if (isPluralForms(value)) return [prefix]
+  return Object.entries(value).flatMap(([k, v]) =>
+    pluralFormPaths(v, prefix ? `${prefix}.${k}` : k),
+  )
 }
 
 describe('dictionaries', () => {
@@ -19,6 +36,22 @@ describe('dictionaries', () => {
     for (const code of ERROR_CODES) {
       expect(ar.errors.codes[code], `ar missing ${code}`).toBeTruthy()
       expect(en.errors.codes[code], `en missing ${code}`).toBeTruthy()
+    }
+  })
+
+  it('Arabic plural forms cover every category Arabic uses', () => {
+    for (const path of pluralFormPaths(ar)) {
+      const forms = path
+        .split('.')
+        .reduce<unknown>((o, k) => (o as Record<string, unknown>)[k], ar) as Record<string, string>
+      expect(Object.keys(forms).sort(), path).toEqual([
+        'few',
+        'many',
+        'one',
+        'other',
+        'two',
+        'zero',
+      ])
     }
   })
 
@@ -35,12 +68,21 @@ describe('dictionaries', () => {
 
 describe('interpolate & plural', () => {
   it('replaces placeholders and leaves unknown ones visible', () => {
-    expect(interpolate('Showing {from}–{to} of {total}', { from: 1, to: 24, total: 120 })).toBe('Showing 1–24 of 120')
+    expect(interpolate('Showing {from}–{to} of {total}', { from: 1, to: 24, total: 120 })).toBe(
+      'Showing 1–24 of 120',
+    )
     expect(interpolate('Hello {name}', {})).toBe('Hello {name}')
   })
 
   it('selects Arabic plural categories', () => {
-    const forms = { zero: 'لا منتجات', one: 'منتج واحد', two: 'منتجان', few: '{count} منتجات', many: '{count} منتجاً', other: '{count} منتج' }
+    const forms = {
+      zero: 'لا منتجات',
+      one: 'منتج واحد',
+      two: 'منتجان',
+      few: '{count} منتجات',
+      many: '{count} منتجاً',
+      other: '{count} منتج',
+    }
     expect(plural('ar', 0, forms)).toBe('لا منتجات')
     expect(plural('ar', 1, forms)).toBe('منتج واحد')
     expect(plural('ar', 2, forms)).toBe('منتجان')

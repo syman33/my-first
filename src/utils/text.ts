@@ -59,17 +59,19 @@ export function buildSearchDocument(parts: Array<string | null | undefined>): st
  * punctuation, and joins words with hyphens.
  */
 export function slugify(input: string): string {
-  return toLatinDigits(input)
-    .normalize('NFKD')
-    .replace(LATIN_COMBINING, '')
-    // Re-compose so Arabic hamza forms (إ أ آ ؤ ئ) survive as letters; only tashkeel is dropped.
-    .normalize('NFC')
-    .replace(ARABIC_MARKS, '')
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/-{2,}/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 180)
+  return (
+    toLatinDigits(input)
+      .normalize('NFKD')
+      .replace(LATIN_COMBINING, '')
+      // Re-compose so Arabic hamza forms (إ أ آ ؤ ئ) survive as letters; only tashkeel is dropped.
+      .normalize('NFC')
+      .replace(ARABIC_MARKS, '')
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, '-')
+      .replace(/-{2,}/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 180)
+  )
 }
 
 /** Slugs are validated against this pattern wherever they are accepted as input. */

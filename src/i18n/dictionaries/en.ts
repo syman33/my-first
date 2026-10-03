@@ -1,7 +1,13 @@
+import { account } from '../sections/account'
+import { auth } from '../sections/auth'
+import { orders } from '../sections/orders'
 import type { Dictionary } from './ar'
 
 /** English dictionary — must match the Arabic shape exactly (enforced by the type). */
 const en: Dictionary = {
+  auth: auth.en,
+  account: account.en,
+  orders: orders.en,
   meta: {
     siteName: 'VÉLORA',
     defaultTitle: 'VÉLORA | Bags, Watches & Accessories for Women and Men',
@@ -73,9 +79,11 @@ const en: Dictionary = {
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
     admin: 'Admin',
+    freeShippingAnnouncement: 'Complimentary delivery on orders of {amount} or more',
   },
   footer: {
-    tagline: 'Modern Saudi elegance with an international eye. Carefully chosen pieces, made to last.',
+    tagline:
+      'Modern Saudi elegance with an international eye. Carefully chosen pieces, made to last.',
     shop: 'Shop',
     help: 'Help',
     company: 'VÉLORA',
@@ -89,13 +97,25 @@ const en: Dictionary = {
     rights: '© {year} VÉLORA. All rights reserved.',
     paymentMethods: 'Accepted payment methods',
     followUs: 'Follow us',
+    contactUs: 'Customer care',
+    commercialRegistration: 'Commercial Registration: {number}',
+    vatNumber: 'VAT number: {number}',
+    social: { instagram: 'Instagram', tiktok: 'TikTok', x: 'X', snapchat: 'Snapchat' },
+  },
+  paymentMethodNames: {
+    MADA: 'mada',
+    CARD: 'Visa / Mastercard',
+    APPLE_PAY: 'Apple Pay',
+    STC_PAY: 'STC Pay',
+    COD: 'Cash on delivery',
   },
   errors: {
     title: 'Something went wrong',
     generic: 'An unexpected error occurred. Please try again.',
     network: 'We could not connect. Check your internet connection and try again.',
     notFoundTitle: 'Page not found',
-    notFoundBody: 'This page may have moved or is no longer available. Explore our latest collections instead.',
+    notFoundBody:
+      'This page may have moved or is no longer available. Explore our latest collections instead.',
     backHome: 'Back to home',
     forbiddenTitle: 'Access denied',
     forbiddenBody: 'This page is not available for your account.',
@@ -111,7 +131,8 @@ const en: Dictionary = {
       UNSUPPORTED_MEDIA_TYPE: 'This file or data type is not supported.',
       INTERNAL_ERROR: 'An unexpected error occurred. Please try again.',
       SERVICE_UNAVAILABLE: 'The service is temporarily unavailable. Please try again later.',
-      CSRF_REJECTED: 'The request was rejected for security reasons. Refresh the page and try again.',
+      CSRF_REJECTED:
+        'The request was rejected for security reasons. Refresh the page and try again.',
       INVALID_CREDENTIALS: 'The email or password is incorrect.',
       ACCOUNT_DISABLED: 'This account is suspended. Please contact customer care.',
       EMAIL_ALREADY_REGISTERED: 'This email is already registered. Sign in or reset your password.',
@@ -128,12 +149,14 @@ const en: Dictionary = {
       INVALID_COUPON: 'This discount code is not valid.',
       ADDRESS_NOT_FOUND: 'Address not found.',
       ORDER_NOT_FOUND: 'Order not found.',
-      ORDER_CREATION_FAILED: 'We could not create your order. You have not been charged — please try again.',
+      ORDER_CREATION_FAILED:
+        'We could not create your order. You have not been charged — please try again.',
       INVALID_ORDER_TRANSITION: 'The order cannot be moved to this status.',
       ORDER_NOT_CANCELLABLE: 'This order can no longer be cancelled.',
       PAYMENT_METHOD_UNAVAILABLE: 'The selected payment method is not available for this order.',
       SHIPPING_METHOD_UNAVAILABLE: 'The selected shipping method is not available.',
-      IDEMPOTENCY_CONFLICT: 'This request was already used with different details. Refresh and try again.',
+      IDEMPOTENCY_CONFLICT:
+        'This request was already used with different details. Refresh and try again.',
       IDEMPOTENCY_IN_PROGRESS: 'Your request is being processed. Please wait a moment.',
       PAYMENT_FAILED: 'The payment was not completed.',
       PAYMENT_NOT_FOUND: 'Payment not found.',

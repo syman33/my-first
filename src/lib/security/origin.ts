@@ -19,7 +19,8 @@ export interface OriginCheckInput {
   allowedOrigins: readonly string[]
 }
 
-export type OriginCheckResult = { ok: true } | { ok: false; reason: 'missing-origin' | 'origin-mismatch' }
+export type OriginCheckResult =
+  { ok: true } | { ok: false; reason: 'missing-origin' | 'origin-mismatch' }
 
 function originOf(value: string): string | null {
   try {
@@ -38,7 +39,9 @@ export function checkRequestOrigin(input: OriginCheckInput): OriginCheckResult {
         ? originOf(input.refererHeader)
         : null
   if (!claimed) return { ok: false, reason: 'missing-origin' }
-  return input.allowedOrigins.includes(claimed) ? { ok: true } : { ok: false, reason: 'origin-mismatch' }
+  return input.allowedOrigins.includes(claimed)
+    ? { ok: true }
+    : { ok: false, reason: 'origin-mismatch' }
 }
 
 /**

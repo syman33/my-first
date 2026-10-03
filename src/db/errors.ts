@@ -49,7 +49,8 @@ export function isCheckViolation(error: unknown, constraint?: string): boolean {
 /** Foreign key violation (P2003 / SQLSTATE 23503). */
 export function isForeignKeyViolation(error: unknown): boolean {
   return (
-    error instanceof Prisma.PrismaClientKnownRequestError && (error.code === 'P2003' || sqlState(error) === '23503')
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    (error.code === 'P2003' || sqlState(error) === '23503')
   )
 }
 

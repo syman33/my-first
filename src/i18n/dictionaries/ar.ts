@@ -5,7 +5,14 @@
  *
  * Copy is written natively in Arabic (not machine-translated from English).
  */
+import { account } from '../sections/account'
+import { auth } from '../sections/auth'
+import { orders } from '../sections/orders'
+
 const ar = {
+  auth: auth.ar,
+  account: account.ar,
+  orders: orders.ar,
   meta: {
     siteName: 'فيلورا',
     defaultTitle: 'VÉLORA | شنط وساعات وإكسسوارات للنساء والرجال',
@@ -77,6 +84,7 @@ const ar = {
     openMenu: 'فتح القائمة',
     closeMenu: 'إغلاق القائمة',
     admin: 'لوحة الإدارة',
+    freeShippingAnnouncement: 'شحن مجاني للطلبات بقيمة {amount} فأكثر',
   },
   footer: {
     tagline: 'أناقة سعودية معاصرة بلمسة عالمية. قطع مختارة بعناية لتدوم.',
@@ -93,6 +101,17 @@ const ar = {
     rights: '© {year} فيلورا. جميع الحقوق محفوظة.',
     paymentMethods: 'طرق الدفع المتاحة',
     followUs: 'تابعونا',
+    contactUs: 'خدمة العملاء',
+    commercialRegistration: 'السجل التجاري: {number}',
+    vatNumber: 'الرقم الضريبي: {number}',
+    social: { instagram: 'إنستغرام', tiktok: 'تيك توك', x: 'إكس', snapchat: 'سناب شات' },
+  },
+  paymentMethodNames: {
+    MADA: 'مدى',
+    CARD: 'فيزا / ماستركارد',
+    APPLE_PAY: 'Apple Pay',
+    STC_PAY: 'STC Pay',
+    COD: 'الدفع عند الاستلام',
   },
   errors: {
     title: 'حدث خطأ',
@@ -118,7 +137,8 @@ const ar = {
       CSRF_REJECTED: 'تم رفض الطلب لأسباب أمنية. حدّث الصفحة وحاول مجدداً.',
       INVALID_CREDENTIALS: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
       ACCOUNT_DISABLED: 'هذا الحساب موقوف. يرجى التواصل مع خدمة العملاء.',
-      EMAIL_ALREADY_REGISTERED: 'هذا البريد الإلكتروني مسجّل مسبقاً. سجّل الدخول أو استعد كلمة المرور.',
+      EMAIL_ALREADY_REGISTERED:
+        'هذا البريد الإلكتروني مسجّل مسبقاً. سجّل الدخول أو استعد كلمة المرور.',
       INVALID_OR_EXPIRED_TOKEN: 'الرابط غير صالح أو انتهت صلاحيته. اطلب رابطاً جديداً.',
       SESSION_EXPIRED: 'انتهت الجلسة. يرجى تسجيل الدخول مجدداً.',
       CURRENT_PASSWORD_INCORRECT: 'كلمة المرور الحالية غير صحيحة.',

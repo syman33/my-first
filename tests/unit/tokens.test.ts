@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { fingerprint, generateToken, hashToken, safeEqual, sealSecret, unsealSecret } from '@/lib/security/tokens'
+import {
+  fingerprint,
+  generateToken,
+  hashToken,
+  safeEqual,
+  sealSecret,
+  unsealSecret,
+} from '@/lib/security/tokens'
 import { checkPasswordPolicy, needsRehash } from '@/lib/auth/password'
 
 describe('tokens', () => {
@@ -33,7 +40,9 @@ describe('tokens', () => {
   })
 
   it('fingerprints are independent of key order', () => {
-    expect(fingerprint({ a: 1, b: [1, 2], c: { x: 1, y: 2 } })).toBe(fingerprint({ c: { y: 2, x: 1 }, b: [1, 2], a: 1 }))
+    expect(fingerprint({ a: 1, b: [1, 2], c: { x: 1, y: 2 } })).toBe(
+      fingerprint({ c: { y: 2, x: 1 }, b: [1, 2], a: 1 }),
+    )
     expect(fingerprint({ a: 1 })).not.toBe(fingerprint({ a: 2 }))
     expect(fingerprint({ a: 1, b: undefined })).toBe(fingerprint({ a: 1 }))
   })
@@ -45,7 +54,9 @@ describe('password policy', () => {
     expect(checkPasswordPolicy('x'.repeat(129))).toBe('passwordTooLong')
     expect(checkPasswordPolicy('Password123')).toBe('passwordTooCommon')
     expect(checkPasswordPolicy('aaaaaaaaaa')).toBe('passwordTooCommon')
-    expect(checkPasswordPolicy('laylaahmed', { email: 'laylaahmed@example.com' })).toBe('passwordTooCommon')
+    expect(checkPasswordPolicy('laylaahmed', { email: 'laylaahmed@example.com' })).toBe(
+      'passwordTooCommon',
+    )
     expect(checkPasswordPolicy('Desert-Rose-2026')).toBeNull()
     expect(checkPasswordPolicy('ChangeMe123!')).toBeNull()
   })

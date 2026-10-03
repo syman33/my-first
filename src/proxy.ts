@@ -27,7 +27,8 @@ function withRequestId(request: NextRequest): { requestId: string; headers: Head
 }
 
 function allowedOrigins(request: NextRequest): string[] {
-  const trustProxy = process.env.TRUST_PROXY_HEADERS === 'true' || process.env.TRUST_PROXY_HEADERS === '1'
+  const trustProxy =
+    process.env.TRUST_PROXY_HEADERS === 'true' || process.env.TRUST_PROXY_HEADERS === '1'
   const origins = new Set<string>([requestOrigin(request.url, request.headers, trustProxy)])
   const configured = toCspOrigin(process.env.NEXT_PUBLIC_APP_URL)
   if (configured) origins.add(configured)
@@ -41,7 +42,11 @@ function preferredLocale(request: NextRequest) {
 
 function analyticsOrigins(): string[] {
   if (process.env.ANALYTICS_PROVIDER !== 'ga4') return []
-  return ['https://www.googletagmanager.com', 'https://www.google-analytics.com', 'https://*.google-analytics.com']
+  return [
+    'https://www.googletagmanager.com',
+    'https://www.google-analytics.com',
+    'https://*.google-analytics.com',
+  ]
 }
 
 export function proxy(request: NextRequest) {
@@ -104,6 +109,15 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next({ request: { headers } })
   response.headers.set('content-security-policy', csp)
   response.headers.set('x-request-id', requestId)
+  // Remember the storefront language the visitor last used (a preference, not a secret).
+  if (isLocale(firstSegment) && request.cookies.get(LOCALE_COOKIE)?.value !== firstSegment) {
+    response.cookies.set(LOCALE_COOKIE, firstSegment, {
+      path: '/',
+      maxAge: 365 * 24 * 60 * 60,
+      sameSite: 'lax',
+      secure: (process.env.NEXT_PUBLIC_APP_URL ?? '').startsWith('https://'),
+    })
+  }
   return response
 }
 

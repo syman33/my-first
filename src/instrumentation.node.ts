@@ -41,7 +41,9 @@ export async function reportRequestError(
   ...[error, request, context]: Parameters<Instrumentation.onRequestError>
 ): Promise<void> {
   const digest =
-    typeof error === 'object' && error !== null && 'digest' in error ? String((error as { digest: unknown }).digest) : undefined
+    typeof error === 'object' && error !== null && 'digest' in error
+      ? String((error as { digest: unknown }).digest)
+      : undefined
   logger.error('request.unhandled_error', {
     error,
     digest,

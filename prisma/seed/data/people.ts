@@ -39,8 +39,24 @@ export const customers: SeedCustomer[] = [
     locale: 'ar',
     joinedDaysAgo: 210,
     addresses: [
-      { label: 'المنزل', city: 'الرياض', district: 'حي الملقا', street: 'طريق أنس بن مالك', buildingNumber: '8123', postalCode: '13521', additionalNumber: '2451' },
-      { label: 'العمل', city: 'الرياض', district: 'حي العليا', street: 'طريق الملك فهد', buildingNumber: '7310', postalCode: '12214', additionalNumber: '3120' },
+      {
+        label: 'المنزل',
+        city: 'الرياض',
+        district: 'حي الملقا',
+        street: 'طريق أنس بن مالك',
+        buildingNumber: '8123',
+        postalCode: '13521',
+        additionalNumber: '2451',
+      },
+      {
+        label: 'العمل',
+        city: 'الرياض',
+        district: 'حي العليا',
+        street: 'طريق الملك فهد',
+        buildingNumber: '7310',
+        postalCode: '12214',
+        additionalNumber: '3120',
+      },
     ],
   },
   {
@@ -49,7 +65,17 @@ export const customers: SeedCustomer[] = [
     phone: '+966500000102',
     locale: 'ar',
     joinedDaysAgo: 180,
-    addresses: [{ label: 'المنزل', city: 'جدة', district: 'حي الشاطئ', street: 'شارع الأمير سلطان', buildingNumber: '6421', postalCode: '23511', additionalNumber: '8812' }],
+    addresses: [
+      {
+        label: 'المنزل',
+        city: 'جدة',
+        district: 'حي الشاطئ',
+        street: 'شارع الأمير سلطان',
+        buildingNumber: '6421',
+        postalCode: '23511',
+        additionalNumber: '8812',
+      },
+    ],
   },
   {
     email: 'reem.alshehri@example.com',
@@ -57,7 +83,16 @@ export const customers: SeedCustomer[] = [
     phone: '+966500000103',
     locale: 'ar',
     joinedDaysAgo: 150,
-    addresses: [{ label: 'المنزل', city: 'أبها', district: 'حي المنسك', street: 'طريق الملك عبدالعزيز', buildingNumber: '4210', postalCode: '62521' }],
+    addresses: [
+      {
+        label: 'المنزل',
+        city: 'أبها',
+        district: 'حي المنسك',
+        street: 'طريق الملك عبدالعزيز',
+        buildingNumber: '4210',
+        postalCode: '62521',
+      },
+    ],
   },
   {
     email: 'lama.alharbi@example.com',
@@ -65,7 +100,17 @@ export const customers: SeedCustomer[] = [
     phone: '+966500000104',
     locale: 'en',
     joinedDaysAgo: 120,
-    addresses: [{ label: 'Home', city: 'الخبر', district: 'حي العقربية', street: 'شارع الأمير فيصل بن فهد', buildingNumber: '3345', postalCode: '34445', additionalNumber: '7021' }],
+    addresses: [
+      {
+        label: 'Home',
+        city: 'الخبر',
+        district: 'حي العقربية',
+        street: 'شارع الأمير فيصل بن فهد',
+        buildingNumber: '3345',
+        postalCode: '34445',
+        additionalNumber: '7021',
+      },
+    ],
   },
   {
     email: 'haifa.alzahrani@example.com',
@@ -73,7 +118,16 @@ export const customers: SeedCustomer[] = [
     phone: '+966500000105',
     locale: 'ar',
     joinedDaysAgo: 95,
-    addresses: [{ label: 'المنزل', city: 'مكة المكرمة', district: 'حي العزيزية', street: 'شارع الحج', buildingNumber: '5120', postalCode: '24243' }],
+    addresses: [
+      {
+        label: 'المنزل',
+        city: 'مكة المكرمة',
+        district: 'حي العزيزية',
+        street: 'شارع الحج',
+        buildingNumber: '5120',
+        postalCode: '24243',
+      },
+    ],
   },
   {
     email: 'abdullah.aldosari@example.com',
@@ -81,7 +135,17 @@ export const customers: SeedCustomer[] = [
     phone: '+966500000106',
     locale: 'ar',
     joinedDaysAgo: 80,
-    addresses: [{ label: 'المنزل', city: 'الدمام', district: 'حي الفيصلية', street: 'شارع الملك سعود', buildingNumber: '2231', postalCode: '32272', additionalNumber: '4410' }],
+    addresses: [
+      {
+        label: 'المنزل',
+        city: 'الدمام',
+        district: 'حي الفيصلية',
+        street: 'شارع الملك سعود',
+        buildingNumber: '2231',
+        postalCode: '32272',
+        additionalNumber: '4410',
+      },
+    ],
   },
   {
     email: 'faisal.almutairi@example.com',
@@ -89,7 +153,17 @@ export const customers: SeedCustomer[] = [
     phone: '+966500000107',
     locale: 'ar',
     joinedDaysAgo: 60,
-    addresses: [{ label: 'المنزل', city: 'الرياض', district: 'حي النرجس', street: 'شارع عثمان بن عفان', buildingNumber: '9012', postalCode: '13327', additionalNumber: '6601' }],
+    addresses: [
+      {
+        label: 'المنزل',
+        city: 'الرياض',
+        district: 'حي النرجس',
+        street: 'شارع عثمان بن عفان',
+        buildingNumber: '9012',
+        postalCode: '13327',
+        additionalNumber: '6601',
+      },
+    ],
   },
   {
     email: 'khalid.alghamdi@example.com',
@@ -97,7 +171,16 @@ export const customers: SeedCustomer[] = [
     phone: '+966500000108',
     locale: 'en',
     joinedDaysAgo: 45,
-    addresses: [{ label: 'Home', city: 'جدة', district: 'حي الروضة', street: 'شارع صاري', buildingNumber: '7788', postalCode: '23435' }],
+    addresses: [
+      {
+        label: 'Home',
+        city: 'جدة',
+        district: 'حي الروضة',
+        street: 'شارع صاري',
+        buildingNumber: '7788',
+        postalCode: '23435',
+      },
+    ],
   },
   {
     email: 'mohammed.alanazi@example.com',
@@ -105,7 +188,16 @@ export const customers: SeedCustomer[] = [
     phone: '+966500000109',
     locale: 'ar',
     joinedDaysAgo: 30,
-    addresses: [{ label: 'المنزل', city: 'تبوك', district: 'حي المروج', street: 'طريق الأمير فهد بن سلطان', buildingNumber: '3901', postalCode: '47913' }],
+    addresses: [
+      {
+        label: 'المنزل',
+        city: 'تبوك',
+        district: 'حي المروج',
+        street: 'طريق الأمير فهد بن سلطان',
+        buildingNumber: '3901',
+        postalCode: '47913',
+      },
+    ],
   },
   {
     email: 'yousef.alshammari@example.com',
@@ -113,7 +205,16 @@ export const customers: SeedCustomer[] = [
     phone: '+966500000110',
     locale: 'ar',
     joinedDaysAgo: 12,
-    addresses: [{ label: 'المنزل', city: 'حائل', district: 'حي النقرة', street: 'شارع الملك عبدالعزيز', buildingNumber: '1180', postalCode: '55421' }],
+    addresses: [
+      {
+        label: 'المنزل',
+        city: 'حائل',
+        district: 'حي النقرة',
+        street: 'شارع الملك عبدالعزيز',
+        buildingNumber: '1180',
+        postalCode: '55421',
+      },
+    ],
   },
 ]
 

@@ -17,15 +17,19 @@ describe('store time zone (Asia/Riyadh, UTC+3, no DST)', () => {
   })
 
   it('converts Riyadh wall-clock time to the correct UTC instant', () => {
-    expect(zonedTimeToUtc({ year: 2026, month: 9, day: 28 }).toISOString()).toBe('2026-09-27T21:00:00.000Z')
-    expect(zonedTimeToUtc({ year: 2026, month: 1, day: 1, hour: 2 }).toISOString()).toBe('2025-12-31T23:00:00.000Z')
+    expect(zonedTimeToUtc({ year: 2026, month: 9, day: 28 }).toISOString()).toBe(
+      '2026-09-27T21:00:00.000Z',
+    )
+    expect(zonedTimeToUtc({ year: 2026, month: 1, day: 1, hour: 2 }).toISOString()).toBe(
+      '2025-12-31T23:00:00.000Z',
+    )
   })
 
   it('handles zones with DST as well', () => {
     // 2026-03-29 is the EU spring-forward day; 12:00 in Berlin is then UTC+2.
-    expect(zonedTimeToUtc({ year: 2026, month: 3, day: 29, hour: 12 }, 'Europe/Berlin').toISOString()).toBe(
-      '2026-03-29T10:00:00.000Z',
-    )
+    expect(
+      zonedTimeToUtc({ year: 2026, month: 3, day: 29, hour: 12 }, 'Europe/Berlin').toISOString(),
+    ).toBe('2026-03-29T10:00:00.000Z')
   })
 
   it('finds the start of the Riyadh day even when UTC is still on the previous date', () => {

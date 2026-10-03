@@ -31,7 +31,9 @@ describe('seed', () => {
 
     // Every product has exactly one default variant, inventory for every variant,
     // a primary image and consistent denormalised prices.
-    const products = await prisma.product.findMany({ include: { variants: { include: { inventory: true } }, images: true } })
+    const products = await prisma.product.findMany({
+      include: { variants: { include: { inventory: true } }, images: true },
+    })
     for (const product of products) {
       expect(product.variants.filter((v) => v.isDefault)).toHaveLength(1)
       expect(product.variants.every((v) => v.inventory !== null)).toBe(true)
@@ -43,7 +45,9 @@ describe('seed', () => {
     }
 
     // Ledger matches stock on hand for every variant.
-    const variants = await prisma.productVariant.findMany({ include: { inventory: true, movements: true } })
+    const variants = await prisma.productVariant.findMany({
+      include: { inventory: true, movements: true },
+    })
     for (const variant of variants) {
       const ledgerTotal = variant.movements.reduce((sum, m) => sum + m.quantityDelta, 0)
       expect(ledgerTotal).toBe(variant.inventory?.onHand)

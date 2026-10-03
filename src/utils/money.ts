@@ -34,7 +34,10 @@ export function assertHalalas(value: unknown, label = 'amount'): asserts value i
   }
 }
 
-export function assertNonNegativeHalalas(value: unknown, label = 'amount'): asserts value is Halalas {
+export function assertNonNegativeHalalas(
+  value: unknown,
+  label = 'amount',
+): asserts value is Halalas {
   assertHalalas(value, label)
   if (value < 0) throw new MoneyError(`${label} must not be negative, received ${value}`)
 }
@@ -65,7 +68,8 @@ export function subtractMoney(a: Halalas, b: Halalas): Halalas {
 /** unit price × quantity */
 export function multiplyMoney(unit: Halalas, quantity: number): Halalas {
   assertHalalas(unit, 'unit amount')
-  if (!Number.isSafeInteger(quantity)) throw new MoneyError(`quantity must be an integer, received ${quantity}`)
+  if (!Number.isSafeInteger(quantity))
+    throw new MoneyError(`quantity must be an integer, received ${quantity}`)
   return checkSafe(BigInt(unit) * BigInt(quantity), 'product')
 }
 
@@ -83,12 +87,17 @@ function divideRoundHalfUp(numerator: bigint, denominator: bigint): bigint {
 export function percentageOf(amount: Halalas, basisPoints: number): Halalas {
   assertNonNegativeHalalas(amount)
   assertBasisPoints(basisPoints)
-  return checkSafe(divideRoundHalfUp(BigInt(amount) * BigInt(basisPoints), BigInt(BPS_DENOMINATOR)), 'percentage')
+  return checkSafe(
+    divideRoundHalfUp(BigInt(amount) * BigInt(basisPoints), BigInt(BPS_DENOMINATOR)),
+    'percentage',
+  )
 }
 
 export function assertBasisPoints(bps: number): void {
   if (!Number.isInteger(bps) || bps < 0 || bps > BPS_DENOMINATOR) {
-    throw new MoneyError(`basis points must be an integer between 0 and ${BPS_DENOMINATOR}, received ${bps}`)
+    throw new MoneyError(
+      `basis points must be an integer between 0 and ${BPS_DENOMINATOR}, received ${bps}`,
+    )
   }
 }
 
@@ -126,7 +135,8 @@ export function allocateProportionally(total: Halalas, weights: readonly number[
     return []
   }
   for (const w of weights) {
-    if (!Number.isSafeInteger(w) || w < 0) throw new MoneyError(`weights must be non-negative integers, received ${w}`)
+    if (!Number.isSafeInteger(w) || w < 0)
+      throw new MoneyError(`weights must be non-negative integers, received ${w}`)
   }
   const weightSum = weights.reduce((s, w) => s + BigInt(w), 0n)
   if (weightSum === 0n) {
@@ -162,8 +172,10 @@ export function normalizeNumericInput(input: string): string {
     const e = EASTERN_ARABIC_INDIC_DIGITS.indexOf(ch)
     if (a >= 0) out += String(a)
     else if (e >= 0) out += String(e)
-    else if (ch === '٫') out += '.' // Arabic decimal separator
-    else if (ch === '٬' || ch === ',' || ch === ' ' || ch === ' ') continue // grouping separators
+    else if (ch === '٫')
+      out += '.' // Arabic decimal separator
+    else if (ch === '٬' || ch === ',' || ch === ' ' || ch === ' ')
+      continue // grouping separators
     else out += ch
   }
   return out
@@ -200,7 +212,10 @@ export function halalasToSarString(amount: Halalas): string {
 }
 
 /** Whole-percent discount between a compare-at price and the selling price, rounded down (never overstated). */
-export function discountPercent(price: Halalas, compareAtPrice: Halalas | null | undefined): number {
+export function discountPercent(
+  price: Halalas,
+  compareAtPrice: Halalas | null | undefined,
+): number {
   assertNonNegativeHalalas(price, 'price')
   if (compareAtPrice === null || compareAtPrice === undefined) return 0
   assertNonNegativeHalalas(compareAtPrice, 'compareAtPrice')

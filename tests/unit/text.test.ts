@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { buildSearchDocument, escapeLikePattern, isValidSlug, normalizeForSearch, slugify } from '@/utils/text'
+import {
+  buildSearchDocument,
+  escapeLikePattern,
+  isValidSlug,
+  normalizeForSearch,
+  slugify,
+} from '@/utils/text'
 
 describe('normalizeForSearch', () => {
   it('unifies Arabic letter variants so spelling differences still match', () => {

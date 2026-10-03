@@ -30,7 +30,9 @@ export async function verifyPassword(passwordHash: string, plain: string): Promi
   try {
     return await verify(passwordHash, plain)
   } catch (error) {
-    logger.error('auth.password_verify_failed', { error: error instanceof Error ? error.message : 'unknown' })
+    logger.error('auth.password_verify_failed', {
+      error: error instanceof Error ? error.message : 'unknown',
+    })
     return false
   }
 }
@@ -56,14 +58,70 @@ export async function burnPasswordVerification(plain: string): Promise<void> {
 
 /** Frequently breached passwords (lower-cased). Blocked regardless of other rules. */
 const COMMON_PASSWORDS = new Set([
-  'password', 'password1', 'password12', 'password123', 'passw0rd', 'p@ssw0rd', 'p@ssword', 'passwort',
-  '12345678', '123456789', '1234567890', '12341234', '11111111', '00000000', '88888888', '87654321',
-  '12121212', '123123123', '11223344', '1q2w3e4r', '1qaz2wsx', 'qwertyui', 'qwertyuiop', 'qwerty123',
-  'asdfghjkl', 'zxcvbnm1', 'abc12345', 'abcd1234', 'aa123456', 'iloveyou', 'sunshine', 'princess',
-  'football', 'baseball', 'welcome1', 'welcome123', 'admin123', 'administrator', 'letmein1', 'trustno1',
-  'superman', 'starwars', 'whatever', 'dragon12', 'monkey12', 'master12', 'changeme', 'changeme1',
-  'computer', 'internet', 'samsung1', 'iphone12', 'mohammed', 'mohammad', 'muhammad', 'abdullah',
-  'alhamdulillah', 'bismillah', 'saudi123', 'riyadh123', 'jeddah123', 'ksa12345', 'velora123', 'velora2026',
+  'password',
+  'password1',
+  'password12',
+  'password123',
+  'passw0rd',
+  'p@ssw0rd',
+  'p@ssword',
+  'passwort',
+  '12345678',
+  '123456789',
+  '1234567890',
+  '12341234',
+  '11111111',
+  '00000000',
+  '88888888',
+  '87654321',
+  '12121212',
+  '123123123',
+  '11223344',
+  '1q2w3e4r',
+  '1qaz2wsx',
+  'qwertyui',
+  'qwertyuiop',
+  'qwerty123',
+  'asdfghjkl',
+  'zxcvbnm1',
+  'abc12345',
+  'abcd1234',
+  'aa123456',
+  'iloveyou',
+  'sunshine',
+  'princess',
+  'football',
+  'baseball',
+  'welcome1',
+  'welcome123',
+  'admin123',
+  'administrator',
+  'letmein1',
+  'trustno1',
+  'superman',
+  'starwars',
+  'whatever',
+  'dragon12',
+  'monkey12',
+  'master12',
+  'changeme',
+  'changeme1',
+  'computer',
+  'internet',
+  'samsung1',
+  'iphone12',
+  'mohammed',
+  'mohammad',
+  'muhammad',
+  'abdullah',
+  'alhamdulillah',
+  'bismillah',
+  'saudi123',
+  'riyadh123',
+  'jeddah123',
+  'ksa12345',
+  'velora123',
+  'velora2026',
 ])
 
 export type PasswordProblem = 'passwordTooShort' | 'passwordTooLong' | 'passwordTooCommon'
@@ -72,7 +130,10 @@ export type PasswordProblem = 'passwordTooShort' | 'passwordTooLong' | 'password
  * NIST SP 800-63B style policy: length and breach-list checks, no arbitrary
  * composition rules. Returns the dictionary key describing the problem.
  */
-export function checkPasswordPolicy(password: string, context: { email?: string } = {}): PasswordProblem | null {
+export function checkPasswordPolicy(
+  password: string,
+  context: { email?: string } = {},
+): PasswordProblem | null {
   if (password.length < PASSWORD_MIN_LENGTH) return 'passwordTooShort'
   if (password.length > PASSWORD_MAX_LENGTH) return 'passwordTooLong'
   const lowered = password.toLowerCase()

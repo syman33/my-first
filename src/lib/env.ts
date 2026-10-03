@@ -32,7 +32,9 @@ const EnvSchema = z
     DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(100).default(10),
 
     NEXT_PUBLIC_APP_URL: z.url({ error: 'NEXT_PUBLIC_APP_URL must be an absolute URL' }),
-    AUTH_SECRET: z.string({ error: 'AUTH_SECRET is required' }).min(32, 'AUTH_SECRET must be at least 32 characters'),
+    AUTH_SECRET: z
+      .string({ error: 'AUTH_SECRET is required' })
+      .min(32, 'AUTH_SECRET must be at least 32 characters'),
     TRUST_PROXY_HEADERS: booleanString,
     CRON_SECRET: optionalString,
 
@@ -68,13 +70,18 @@ const EnvSchema = z
   })
   .superRefine((env, ctx) => {
     const isProd = env.NODE_ENV === 'production'
-    const issue = (path: string, message: string) => ctx.addIssue({ code: 'custom', path: [path], message })
+    const issue = (path: string, message: string) =>
+      ctx.addIssue({ code: 'custom', path: [path], message })
 
     if (env.PAYMENT_PROVIDER === 'mock' && !env.MOCK_PAYMENT_WEBHOOK_SECRET) {
       issue('MOCK_PAYMENT_WEBHOOK_SECRET', 'required when PAYMENT_PROVIDER=mock')
     }
     if (env.PAYMENT_PROVIDER === 'moyasar') {
-      for (const key of ['MOYASAR_SECRET_KEY', 'MOYASAR_PUBLISHABLE_KEY', 'MOYASAR_WEBHOOK_SECRET'] as const) {
+      for (const key of [
+        'MOYASAR_SECRET_KEY',
+        'MOYASAR_PUBLISHABLE_KEY',
+        'MOYASAR_WEBHOOK_SECRET',
+      ] as const) {
         if (!env[key]) issue(key, 'required when PAYMENT_PROVIDER=moyasar')
       }
     }
@@ -106,19 +113,36 @@ const EnvSchema = z
       if (env.SHIPPING_PROVIDER === 'mock' && !env.ALLOW_MOCK_PROVIDERS_IN_PRODUCTION) {
         issue('SHIPPING_PROVIDER', 'the mock shipping provider is development-only')
       }
+      if (env.EMAIL_PROVIDER === 'console' && !env.ALLOW_MOCK_PROVIDERS_IN_PRODUCTION) {
+        issue(
+          'EMAIL_PROVIDER',
+          'the console email provider never delivers mail; configure resend for production',
+        )
+      }
       if (env.STORAGE_PROVIDER === 'local' && !env.ALLOW_MOCK_PROVIDERS_IN_PRODUCTION) {
-        issue('STORAGE_PROVIDER', 'local file storage is not durable on serverless hosts; configure s3')
+        issue(
+          'STORAGE_PROVIDER',
+          'local file storage is not durable on serverless hosts; configure s3',
+        )
       }
       if (env.RATE_LIMIT_PROVIDER === 'memory') {
-        issue('RATE_LIMIT_PROVIDER', 'in-memory rate limiting is not shared across instances; use postgres')
+        issue(
+          'RATE_LIMIT_PROVIDER',
+          'in-memory rate limiting is not shared across instances; use postgres',
+        )
       }
-      if (/^http:\/\//.test(env.NEXT_PUBLIC_APP_URL) && !/localhost|127\.0\.0\.1/.test(env.NEXT_PUBLIC_APP_URL)) {
+      if (
+        /^http:\/\//.test(env.NEXT_PUBLIC_APP_URL) &&
+        !/localhost|127\.0\.0\.1/.test(env.NEXT_PUBLIC_APP_URL)
+      ) {
         issue('NEXT_PUBLIC_APP_URL', 'must use https in production')
       }
     }
   })
 
-export type ServerEnv = z.infer<typeof EnvSchema> & { appEnv: 'development' | 'test' | 'staging' | 'production' }
+export type ServerEnv = z.infer<typeof EnvSchema> & {
+  appEnv: 'development' | 'test' | 'staging' | 'production'
+}
 
 let cached: ServerEnv | undefined
 
@@ -129,7 +153,9 @@ export class EnvValidationError extends Error {
 export function parseEnv(source: Record<string, string | undefined>): ServerEnv {
   const result = EnvSchema.safeParse(source)
   if (!result.success) {
-    const lines = result.error.issues.map((i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`)
+    const lines = result.error.issues.map(
+      (i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`,
+    )
     throw new EnvValidationError(`Invalid environment configuration:\n${lines.join('\n')}`)
   }
   const data = result.data

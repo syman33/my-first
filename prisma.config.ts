@@ -16,6 +16,8 @@ export default defineConfig({
     // (e.g. CI install step); commands that touch the DB fail loudly instead.
     url: process.env.DATABASE_URL ?? 'postgresql://invalid:invalid@localhost:5432/invalid',
     // Disposable database used to replay migrations when checking for drift.
-    ...(process.env.SHADOW_DATABASE_URL ? { shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL } : {}),
+    ...(process.env.SHADOW_DATABASE_URL
+      ? { shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL }
+      : {}),
   },
 })

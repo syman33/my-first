@@ -29,7 +29,9 @@ const composites = await Promise.all(
     top: Math.floor(index / columns) * tileH,
   })),
 )
-await sharp({ create: { width: columns * tileW, height: rows * tileH, channels: 3, background: '#ffffff' } })
+await sharp({
+  create: { width: columns * tileW, height: rows * tileH, channels: 3, background: '#ffffff' },
+})
   .composite(composites)
   .png()
   .toFile(out)
