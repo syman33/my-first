@@ -1,5 +1,6 @@
 import { account } from '../sections/account'
 import { auth } from '../sections/auth'
+import { cart } from '../sections/cart'
 import { orders } from '../sections/orders'
 import { store } from '../sections/store'
 import type { Dictionary } from './ar'
@@ -10,6 +11,7 @@ const en: Dictionary = {
   account: account.en,
   orders: orders.en,
   store: store.en,
+  cart: cart.en,
   meta: {
     siteName: 'VÉLORA',
     defaultTitle: 'VÉLORA | Bags, Watches & Accessories for Women and Men',

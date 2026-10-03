@@ -7,6 +7,7 @@ import { isLocale } from '@/i18n/config'
 import { openGraph, samePathAlternates } from '@/lib/seo'
 import { activeFilterCount, parseListingParams } from '@/schemas/catalog'
 import { getListingFacets, listProducts } from '@/services/catalog/listing.service'
+import { getWishlistProductIds } from '@/services/wishlist/wishlist.service'
 
 const defaults = { sort: 'featured' as const }
 
@@ -38,9 +39,10 @@ export default async function ShopPage({ params, searchParams }: PageProps<'/[lo
   const dict = getDictionary(locale)
   const filters = { ...parseListingParams(await searchParams, defaults), q: '' }
   const scope = { kind: 'all' } as const
-  const [listing, facets] = await Promise.all([
+  const [listing, facets, wishlistIds] = await Promise.all([
     listProducts(scope, filters, locale),
     getListingFacets(scope, ''),
+    getWishlistProductIds(),
   ])
   return (
     <ListingView
@@ -52,6 +54,7 @@ export default async function ShopPage({ params, searchParams }: PageProps<'/[lo
       listing={listing}
       facets={facets}
       options={{ showCategories: true, showGenders: true, showSale: true }}
+      actions={{ wishlistIds, t: dict.cart, genericError: dict.errors.generic }}
       header={
         <ListingHeader
           locale={locale}

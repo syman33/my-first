@@ -4,7 +4,8 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { Breadcrumbs } from '@/components/catalog/breadcrumbs'
 import { ProductGrid } from '@/components/catalog/product-grid'
 import { ProductReviews } from '@/components/catalog/product-reviews'
-import { ProductShowcase, type ShowcaseVariant } from '@/components/catalog/product-showcase'
+import { type ShowcaseVariant } from '@/components/catalog/product-showcase'
+import { ProductPurchase } from '@/components/cart/product-purchase'
 import { RatingStars } from '@/components/catalog/rating-stars'
 import { JsonLd } from '@/components/seo/json-ld'
 import { getDictionary, interpolate, plural } from '@/i18n'
@@ -18,6 +19,7 @@ import {
   type ProductDetail,
 } from '@/services/catalog/product.service'
 import { getSettings } from '@/services/settings/settings.service'
+import { getWishlistProductIds } from '@/services/wishlist/wishlist.service'
 import { halalasToSarString } from '@/utils/money'
 
 function productPath(locale: Locale, product: Pick<ProductDetail, 'slugAr' | 'slugEn'>): string {
@@ -120,7 +122,7 @@ export default async function ProductPage({
     Math.min(Number.parseInt(typeof rawPage === 'string' ? rawPage : '1', 10) || 1, 100),
   )
 
-  const [reviews, related, shipping, returns] = await Promise.all([
+  const [reviews, related, shipping, returns, wishlistIds] = await Promise.all([
     getApprovedReviews(product.id, reviewsPage),
     productRail({ kind: 'category', categoryIds: [product.categoryId] }, 'best-selling', locale, {
       take: 4,
@@ -128,6 +130,7 @@ export default async function ProductPage({
     }),
     getSettings('shipping'),
     getSettings('returns'),
+    getWishlistProductIds(),
   ])
 
   const variants: ShowcaseVariant[] = product.variants.map((variant) => ({
@@ -165,7 +168,13 @@ export default async function ProductPage({
       <Breadcrumbs locale={locale} label={t.breadcrumb} items={crumbs} />
 
       <div className="mt-8">
-        <ProductShowcase
+        <ProductPurchase
+          productId={product.id}
+          productName={product.name}
+          inWishlist={wishlistIds.has(product.id)}
+          addToBagT={dict.cart.addToBag}
+          wishlistT={dict.cart.wishlist}
+          genericError={dict.errors.generic}
           locale={locale}
           t={t}
           cardT={dict.store.card}
@@ -276,7 +285,7 @@ export default async function ProductPage({
               </Link>
             </details>
           </div>
-        </ProductShowcase>
+        </ProductPurchase>
       </div>
 
       <div className="mt-20 border-t border-line pt-14">
@@ -298,7 +307,12 @@ export default async function ProductPage({
           <h2 id="related-title" className="mb-8 font-display text-3xl text-ink">
             {t.related}
           </h2>
-          <ProductGrid locale={locale} products={related} t={dict.store.card} />
+          <ProductGrid
+            locale={locale}
+            products={related}
+            t={dict.store.card}
+            actions={{ wishlistIds, t: dict.cart, genericError: dict.errors.generic }}
+          />
         </section>
       ) : null}
     </div>

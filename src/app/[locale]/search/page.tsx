@@ -8,6 +8,7 @@ import { getDictionary, interpolate } from '@/i18n'
 import { isLocale } from '@/i18n/config'
 import { parseListingParams } from '@/schemas/catalog'
 import { getListingFacets, listProducts, productRail } from '@/services/catalog/listing.service'
+import { getWishlistProductIds } from '@/services/wishlist/wishlist.service'
 
 const defaults = { sort: 'best-selling' as const }
 
@@ -32,6 +33,11 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
   const dict = getDictionary(locale)
   const t = dict.store.listing
   const filters = parseListingParams(await searchParams, defaults)
+  const actions = {
+    wishlistIds: await getWishlistProductIds(),
+    t: dict.cart,
+    genericError: dict.errors.generic,
+  }
 
   const searchBox = (
     <header>
@@ -78,7 +84,7 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
             <h2 id="popular-title" className="mb-8 font-display text-2xl text-ink">
               {dict.store.home.bestSellers}
             </h2>
-            <ProductGrid locale={locale} products={popular} t={dict.store.card} />
+            <ProductGrid locale={locale} products={popular} t={dict.store.card} actions={actions} />
           </section>
         ) : null}
       </div>
@@ -100,6 +106,7 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
       listing={listing}
       facets={facets}
       options={{ showCategories: true, showGenders: true, showSale: true }}
+      actions={actions}
       header={searchBox}
     />
   )

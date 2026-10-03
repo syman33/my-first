@@ -18,6 +18,7 @@ import {
   type ListingScope,
   listProducts,
 } from '@/services/catalog/listing.service'
+import { getWishlistProductIds } from '@/services/wishlist/wishlist.service'
 import { decodeSlugParam } from '@/utils/text'
 
 function scopeFor(category: CategoryNode, categories: CategoryNode[]): ListingScope {
@@ -92,9 +93,10 @@ export default async function CategoryPage({
   const defaults = { sort: defaultSortFor(category) }
   const filters = parseListingParams(await searchParams, defaults)
   const scope = scopeFor(category, categories)
-  const [listing, facets] = await Promise.all([
+  const [listing, facets, wishlistIds] = await Promise.all([
     listProducts(scope, filters, locale),
     getListingFacets(scope, filters.q),
+    getWishlistProductIds(),
   ])
 
   const basePath = `/${locale}/${encodeURIComponent(category.slug)}`
@@ -116,6 +118,7 @@ export default async function CategoryPage({
       filters={filters}
       listing={listing}
       facets={facets}
+      actions={{ wishlistIds, t: dict.cart, genericError: dict.errors.generic }}
       options={{
         showCategories: category.kind !== 'STANDARD',
         showGenders: category.kind !== 'GENDER',

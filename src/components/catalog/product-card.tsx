@@ -5,6 +5,8 @@ import type { Dictionary } from '@/i18n'
 import { interpolate } from '@/i18n'
 import type { Locale } from '@/i18n/config'
 import type { ProductBadge, ProductCardData } from '@/lib/catalog/presentation'
+import { QuickAdd } from '@/components/cart/quick-add'
+import { WishlistButton } from '@/components/cart/wishlist-button'
 import { cn } from '@/utils/cn'
 import { Price } from './price'
 import { RatingStars } from './rating-stars'
@@ -22,10 +24,18 @@ function badgeLabel(badge: ProductBadge, t: Dictionary['store']['card']): string
   }
 }
 
+export interface CardActions {
+  wishlistIds: ReadonlySet<string>
+  t: Pick<Dictionary['cart'], 'wishlist' | 'addToBag'>
+  genericError: string
+}
+
 interface ProductCardProps {
   locale: Locale
   product: ProductCardData
   t: Dictionary['store']['card']
+  /** Wishlist heart and quick add (omitted where actions make no sense). */
+  actions?: CardActions
   /** Above-the-fold cards load eagerly. */
   priority?: boolean
 }
@@ -34,7 +44,7 @@ interface ProductCardProps {
  * Editorial product card: one link wrapping image and text (a single tab
  * stop), a second image revealed on hover, and restrained metadata.
  */
-export function ProductCard({ locale, product, t, priority = false }: ProductCardProps) {
+export function ProductCard({ locale, product, t, actions, priority = false }: ProductCardProps) {
   return (
     <article className="group relative" data-testid="product-card">
       <Link href={product.href as Route} className="block focus-visible:outline-offset-4">
@@ -85,6 +95,43 @@ export function ProductCard({ locale, product, t, priority = false }: ProductCar
           />
         </div>
       </Link>
+      {actions ? (
+        <>
+          <div className="absolute end-3 top-3">
+            <WishlistButton
+              locale={locale}
+              productId={product.id}
+              productName={product.name}
+              initialActive={actions.wishlistIds.has(product.id)}
+              labels={{
+                add: actions.t.wishlist.add,
+                remove: actions.t.wishlist.remove,
+                added: actions.t.wishlist.added,
+                removed: actions.t.wishlist.removed,
+                error: actions.genericError,
+              }}
+            />
+          </div>
+          {product.quickAddVariantId ? (
+            <div className="pointer-events-none absolute inset-x-0 top-0 hidden aspect-[4/5] items-end opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100 lg:flex">
+              <div className="pointer-events-auto w-full p-3">
+                <QuickAdd
+                  locale={locale}
+                  variantId={product.quickAddVariantId}
+                  productName={product.name}
+                  labels={{
+                    add: actions.t.addToBag.add,
+                    adding: actions.t.addToBag.adding,
+                    added: actions.t.addToBag.added,
+                    quickAdd: actions.t.addToBag.quickAdd,
+                    error: actions.genericError,
+                  }}
+                />
+              </div>
+            </div>
+          ) : null}
+        </>
+      ) : null}
       <div className="mt-2 flex items-center justify-between gap-2">
         {product.swatches.length > 1 ? (
           <ul className="flex items-center gap-1.5" aria-label={t.colors}>

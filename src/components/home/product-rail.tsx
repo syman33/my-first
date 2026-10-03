@@ -1,3 +1,4 @@
+import type { CardActions } from '@/components/catalog/product-card'
 import { ProductGrid } from '@/components/catalog/product-grid'
 import type { Dictionary } from '@/i18n'
 import type { Locale } from '@/i18n/config'
@@ -12,6 +13,7 @@ export function ProductRailSection({
   products,
   viewAll,
   cardT,
+  actions,
 }: {
   id: string
   locale: Locale
@@ -19,12 +21,13 @@ export function ProductRailSection({
   products: ProductCardData[]
   viewAll: { href: string; label: string }
   cardT: Dictionary['store']['card']
+  actions: CardActions
 }) {
   if (products.length === 0) return null
   return (
     <section aria-labelledby={id} className="container-luxe py-14 lg:py-20">
       <SectionHeading id={id} locale={locale} title={title} link={viewAll} />
-      <ProductGrid locale={locale} products={products} t={cardT} />
+      <ProductGrid locale={locale} products={products} t={cardT} actions={actions} />
     </section>
   )
 }

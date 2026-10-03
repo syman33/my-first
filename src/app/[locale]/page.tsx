@@ -16,6 +16,7 @@ import { descendantIds, getActiveCategories } from '@/services/catalog/category.
 import { productRail } from '@/services/catalog/listing.service'
 import { getActiveBanners } from '@/services/content/banner.service'
 import { getSettings } from '@/services/settings/settings.service'
+import { getWishlistProductIds } from '@/services/wishlist/wishlist.service'
 
 export async function generateMetadata({ params }: PageProps<'/[locale]'>): Promise<Metadata> {
   const { locale } = await params
@@ -74,6 +75,11 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
     getSettings('store'),
   ])
 
+  const actions = {
+    wishlistIds: await getWishlistProductIds(),
+    t: dict.cart,
+    genericError: dict.errors.generic,
+  }
   const hero = heroBanners[0]
   const topLevel = categories.filter(
     (c) => c.parentId === null && (c.kind === 'STANDARD' || c.kind === 'GENDER'),
@@ -155,6 +161,7 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
         products={newArrivals}
         viewAll={{ href: `/${locale}/new-arrivals`, label: t.viewAll }}
         cardT={dict.store.card}
+        actions={actions}
       />
 
       <CollectionSplit
@@ -175,6 +182,7 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
         products={bestSellers}
         viewAll={{ href: `/${locale}/best-sellers`, label: t.viewAll }}
         cardT={dict.store.card}
+        actions={actions}
       />
 
       <PromoBanners label={dict.nav.offers} banners={promoBanners} />
@@ -193,6 +201,7 @@ export default async function HomePage({ params }: PageProps<'/[locale]'>) {
             products={rail.products}
             viewAll={{ href: collectionLink(rail.category.slug), label: t.viewAll }}
             cardT={dict.store.card}
+            actions={actions}
           />
         ) : null,
       )}

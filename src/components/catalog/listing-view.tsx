@@ -16,6 +16,7 @@ import { ActiveFilters } from './active-filters'
 import { FilterDrawer } from './filter-drawer'
 import { FilterForm, type FilterFormOptions } from './filter-form'
 import { Pagination } from './pagination'
+import type { CardActions } from './product-card'
 import { ProductGrid } from './product-grid'
 import { SortControl } from './sort-control'
 
@@ -30,6 +31,7 @@ interface ListingViewProps {
   facets: ListingFacets
   options: FilterFormOptions
   header: ReactNode
+  actions: CardActions
 }
 
 export function ListingView({
@@ -42,6 +44,7 @@ export function ListingView({
   facets,
   options,
   header,
+  actions,
 }: ListingViewProps) {
   const t = dict.store.listing
   const filterCount = activeFilterCount(filters)
@@ -144,6 +147,7 @@ export function ListingView({
                 products={listing.items}
                 t={dict.store.card}
                 priorityCount={4}
+                actions={actions}
               />
               <div className="mt-14">
                 <Pagination
