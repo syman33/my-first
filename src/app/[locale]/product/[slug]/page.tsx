@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { Breadcrumbs } from '@/components/catalog/breadcrumbs'
 import { ProductGrid } from '@/components/catalog/product-grid'
 import { ProductReviews } from '@/components/catalog/product-reviews'
+import { ReviewForm } from '@/components/catalog/review-form'
 import { type ShowcaseVariant } from '@/components/catalog/product-showcase'
 import { ProductPurchase } from '@/components/cart/product-purchase'
 import { RatingStars } from '@/components/catalog/rating-stars'
@@ -11,6 +12,7 @@ import { JsonLd } from '@/components/seo/json-ld'
 import { getDictionary, interpolate, plural } from '@/i18n'
 import { isLocale, type Locale } from '@/i18n/config'
 import { formatMoney } from '@/i18n/format'
+import { getCurrentSession, loginPath } from '@/lib/auth/current-user'
 import { absoluteUrl, localizedAlternates, metaDescription, openGraph } from '@/lib/seo'
 import { productRail } from '@/services/catalog/listing.service'
 import {
@@ -18,6 +20,7 @@ import {
   getProductPage,
   type ProductDetail,
 } from '@/services/catalog/product.service'
+import { reviewEligibility } from '@/services/reviews/review.service'
 import { getSettings } from '@/services/settings/settings.service'
 import { getWishlistProductIds } from '@/services/wishlist/wishlist.service'
 import { halalasToSarString } from '@/utils/money'
@@ -122,7 +125,8 @@ export default async function ProductPage({
     Math.min(Number.parseInt(typeof rawPage === 'string' ? rawPage : '1', 10) || 1, 100),
   )
 
-  const [reviews, related, shipping, returns, wishlistIds] = await Promise.all([
+  const session = await getCurrentSession()
+  const [reviews, related, shipping, returns, wishlistIds, eligibility] = await Promise.all([
     getApprovedReviews(product.id, reviewsPage),
     productRail({ kind: 'category', categoryIds: [product.categoryId] }, 'best-selling', locale, {
       take: 4,
@@ -131,6 +135,7 @@ export default async function ProductPage({
     getSettings('shipping'),
     getSettings('returns'),
     getWishlistProductIds(),
+    reviewEligibility(session?.user.id ?? null, product.id),
   ])
 
   const variants: ShowcaseVariant[] = product.variants.map((variant) => ({
@@ -300,6 +305,28 @@ export default async function ProductPage({
           }
           labels={{ previous: dict.common.previous, next: dict.common.next }}
         />
+        <div className="mt-10 max-w-2xl">
+          {eligibility.canReview ? (
+            <ReviewForm
+              locale={locale}
+              productId={product.id}
+              t={t}
+              fieldMessages={dict.errors.fields}
+              genericError={dict.errors.generic}
+            />
+          ) : eligibility.reason === 'SIGN_IN' ? (
+            <Link
+              href={loginPath(locale, `${productPath(locale, product)}#reviews`)}
+              className="text-sm underline underline-offset-4"
+            >
+              {t.reviewSignIn}
+            </Link>
+          ) : (
+            <p className="text-sm text-muted">
+              {eligibility.reason === 'ALREADY_REVIEWED' ? t.reviewAlready : t.reviewOnlyBuyers}
+            </p>
+          )}
+        </div>
       </div>
 
       {related.length > 0 ? (
