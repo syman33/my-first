@@ -79,3 +79,40 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions): P
   }
   return (payload as { data: T }).data
 }
+
+/** Multipart upload (e.g. images) with the same error envelope as JSON requests. */
+export async function apiUpload<T>(
+  path: string,
+  form: FormData,
+  options: { locale: 'ar' | 'en'; signal?: AbortSignal },
+): Promise<T> {
+  let response: Response
+  try {
+    // The browser sets the multipart boundary; never set Content-Type by hand here.
+    response = await fetch(path, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json', 'x-velora-locale': options.locale },
+      body: form,
+      signal: options.signal,
+    })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error
+    throw new ApiClientError(0, { code: 'NETWORK_ERROR', message: NETWORK_MESSAGE[options.locale] })
+  }
+  let payload: unknown = null
+  try {
+    payload = await response.json()
+  } catch {
+    payload = null
+  }
+  if (!response.ok) {
+    const body = (payload as { error?: ApiErrorBody; requestId?: string } | null) ?? {}
+    throw new ApiClientError(
+      response.status,
+      body.error ?? { code: 'INTERNAL_ERROR', message: NETWORK_MESSAGE[options.locale] },
+      body.requestId,
+    )
+  }
+  return (payload as { data: T }).data
+}

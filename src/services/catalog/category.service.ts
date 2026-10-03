@@ -22,38 +22,7 @@ export interface CategoryNode {
   updatedAt: Date
 }
 
-/**
- * Static storefront routes. A category with one of these slugs would be
- * shadowed by the route, so category creation must reject them.
- */
-export const RESERVED_CATEGORY_SLUGS = new Set([
-  'account',
-  'admin',
-  'api',
-  'about',
-  'cart',
-  'checkout',
-  'contact',
-  'faq',
-  'forgot-password',
-  'login',
-  'newsletter',
-  'order',
-  'orders',
-  'pages',
-  'privacy',
-  'product',
-  'products',
-  'register',
-  'reset-password',
-  'returns',
-  'search',
-  'shipping',
-  'shop',
-  'terms',
-  'verify-email',
-  'wishlist',
-])
+export { RESERVED_CATEGORY_SLUGS } from '@/lib/catalog/reserved-slugs'
 
 /** All active categories (a small table), memoised per request. */
 export const getActiveCategories = cache(async (): Promise<CategoryNode[]> =>

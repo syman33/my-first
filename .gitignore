@@ -19,9 +19,8 @@
 next-env.d.ts
 *.tsbuildinfo
 
-# local uploads (development storage provider)
-/public/uploads/*
-!/public/uploads/.gitkeep
+# local uploads (development storage provider, served at /uploads)
+/storage/
 
 # local backups produced by scripts/db/backup.sh
 /backups/

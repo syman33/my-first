@@ -15,6 +15,8 @@ export interface CallOptions<P> {
   path?: string
   body?: unknown
   rawBody?: string
+  /** Multipart body, encoded exactly as a browser would (boundary and Content-Length set). */
+  form?: FormData
   params?: P
   headers?: Record<string, string>
   /** Omit the Origin header (simulates a missing-origin / cross-site request). */
@@ -46,8 +48,15 @@ export class TestClient {
   ): Promise<CallResult<T>> {
     const method =
       options.method ??
-      (options.body !== undefined || options.rawBody !== undefined ? 'POST' : 'GET')
+      (options.body !== undefined || options.rawBody !== undefined || options.form ? 'POST' : 'GET')
     const headers = new Headers(options.headers)
+    let multipart: ArrayBuffer | undefined
+    if (options.form) {
+      const encoded = new Response(options.form)
+      multipart = await encoded.arrayBuffer()
+      headers.set('content-type', encoded.headers.get('content-type') ?? 'multipart/form-data')
+      headers.set('content-length', String(multipart.byteLength))
+    }
     if (!options.noOrigin) headers.set('origin', options.origin ?? TEST_ORIGIN)
     if (options.body !== undefined || options.rawBody !== undefined) {
       if (!headers.has('content-type')) headers.set('content-type', 'application/json')
@@ -58,7 +67,9 @@ export class TestClient {
       method,
       headers,
       body:
-        options.rawBody ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
+        multipart ??
+        options.rawBody ??
+        (options.body !== undefined ? JSON.stringify(options.body) : undefined),
     })
     const response = await handler(request, {
       params: Promise.resolve((options.params ?? {}) as P),

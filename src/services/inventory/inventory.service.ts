@@ -179,3 +179,41 @@ export async function restock(
     await ledger(tx, line, type, row, { onHand: line.quantity, reserved: 0 }, ctx)
   }
 }
+
+/**
+ * Staff stock change (goods received, damage written off, count corrected).
+ * On-hand may never drop below what is reserved for open orders, nor below
+ * zero; the change and its reason go to the ledger.
+ */
+export async function adjustStock(
+  tx: DbClient,
+  line: StockLine & { delta: number },
+  type: 'RESTOCK' | 'DAMAGE_WRITE_OFF' | 'MANUAL_ADJUSTMENT',
+  ctx: MovementContext,
+): Promise<{ onHand: number; reserved: number }> {
+  if (!Number.isInteger(line.delta) || line.delta === 0) {
+    throw new AppError('VALIDATION_ERROR', 'Stock change must be a non-zero whole number', {
+      status: 422,
+    })
+  }
+  const rows = await tx.$queryRaw<StockRow[]>`
+    UPDATE inventory
+       SET on_hand = on_hand + ${line.delta}, updated_at = now()
+     WHERE variant_id = ${line.variantId}::uuid
+       AND on_hand + ${line.delta} >= reserved
+       AND on_hand + ${line.delta} >= 0
+    RETURNING on_hand, reserved`
+  const row = rows[0]
+  if (!row) {
+    throw new AppError(
+      'CONFLICT',
+      `Stock for ${line.sku} cannot go below the units reserved for open orders`,
+      {
+        status: 409,
+        details: { reason: 'BELOW_RESERVED', available: await availableFor(tx, line.variantId) },
+      },
+    )
+  }
+  await ledger(tx, line, type, row, { onHand: line.delta, reserved: 0 }, ctx)
+  return { onHand: row.on_hand, reserved: row.reserved }
+}

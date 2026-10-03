@@ -61,6 +61,8 @@ const EnvSchema = z
     STORAGE_ACCESS_KEY_ID: optionalString,
     STORAGE_SECRET_ACCESS_KEY: optionalString,
     STORAGE_PUBLIC_BASE_URL: optionalString,
+    /** Local storage provider only: directory for uploaded files (served at /uploads). */
+    UPLOAD_DIR: z.string().trim().min(1).default('storage/uploads'),
 
     RATE_LIMIT_PROVIDER: z.enum(['postgres', 'memory']).default('postgres'),
     ANALYTICS_PROVIDER: z.enum(['none', 'console', 'ga4']).default('none'),

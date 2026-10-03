@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import { logger } from '@/lib/logger'
 
 const copy = {
   ar: {
@@ -34,9 +35,8 @@ export default function LocaleError({
   const t = params.locale === 'en' ? copy.en : copy.ar
 
   useEffect(() => {
-    // Client-side errors are not visible to server logs; surface them in the console for debugging.
-    // eslint-disable-next-line no-console
-    console.error(error)
+    // Client-side errors are not visible to server logs; surface them (redacted) for debugging.
+    logger.error('client.render_error', { message: error.message, digest: error.digest ?? null })
   }, [error])
 
   return (
