@@ -85,3 +85,16 @@ export function isValidSlug(slug: string): boolean {
 export function escapeLikePattern(input: string): string {
   return input.replace(/[\\%_]/g, (ch) => `\\${ch}`)
 }
+
+/**
+ * Route params may arrive percent-encoded (Arabic slugs). Slugs never contain
+ * "%", so decoding is idempotent; malformed input yields null (→ 404).
+ */
+export function decodeSlugParam(raw: string): string | null {
+  try {
+    const decoded = decodeURIComponent(raw).normalize('NFC')
+    return decoded.length > 0 && decoded.length <= 200 ? decoded : null
+  } catch {
+    return null
+  }
+}

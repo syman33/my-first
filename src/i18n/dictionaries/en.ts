@@ -1,6 +1,7 @@
 import { account } from '../sections/account'
 import { auth } from '../sections/auth'
 import { orders } from '../sections/orders'
+import { store } from '../sections/store'
 import type { Dictionary } from './ar'
 
 /** English dictionary — must match the Arabic shape exactly (enforced by the type). */
@@ -8,6 +9,7 @@ const en: Dictionary = {
   auth: auth.en,
   account: account.en,
   orders: orders.en,
+  store: store.en,
   meta: {
     siteName: 'VÉLORA',
     defaultTitle: 'VÉLORA | Bags, Watches & Accessories for Women and Men',

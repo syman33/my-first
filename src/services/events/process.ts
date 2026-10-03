@@ -1,5 +1,6 @@
 import 'server-only'
 import { logger } from '@/lib/logger'
+import { registerEngagementNotificationHandlers } from '@/services/notifications/engagement-handlers'
 import { registerAccountNotificationHandlers } from '@/services/notifications/handlers'
 import { processOutbox, type OutboxRunResult } from './outbox.service'
 
@@ -10,6 +11,7 @@ export function ensureOutboxHandlers(): void {
   if (handlersReady) return
   handlersReady = true
   registerAccountNotificationHandlers()
+  registerEngagementNotificationHandlers()
 }
 
 /**

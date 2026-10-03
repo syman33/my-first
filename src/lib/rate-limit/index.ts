@@ -134,6 +134,8 @@ export const RATE_LIMITS = {
   changePassword: { name: 'password-change:user', limit: 5, windowSeconds: 15 * 60 },
   contact: { name: 'contact:ip', limit: 5, windowSeconds: 60 * 60 },
   newsletter: { name: 'newsletter:ip', limit: 10, windowSeconds: 60 * 60 },
+  /** Caps welcome emails to one address (subscribe/unsubscribe loops). */
+  newsletterEmail: { name: 'newsletter:email', limit: 3, windowSeconds: 24 * 60 * 60 },
   coupon: { name: 'coupon:subject', limit: 20, windowSeconds: 10 * 60 },
   cartWrite: { name: 'cart:subject', limit: 120, windowSeconds: 60 },
   checkout: { name: 'checkout:user', limit: 10, windowSeconds: 10 * 60 },

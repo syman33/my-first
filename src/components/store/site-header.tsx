@@ -1,3 +1,4 @@
+import Form from 'next/form'
 import Link from 'next/link'
 import type { Route } from 'next'
 import { Heart, Search, ShoppingBag, User } from 'lucide-react'
@@ -75,9 +76,8 @@ export function SiteHeader({
               isStaff={Boolean(user?.isStaff)}
               switchLocaleHref={switchLocaleHref}
             />
-            <form
+            <Form
               action={`/${locale}/search`}
-              method="get"
               role="search"
               className="hidden items-center lg:flex"
             >
@@ -94,10 +94,11 @@ export function SiteHeader({
                   name="q"
                   type="search"
                   placeholder={dict.nav.searchPlaceholder}
+                  maxLength={100}
                   className="h-10 w-64 border-b border-line bg-transparent ps-9 pe-2 text-sm placeholder:text-muted-decorative focus:border-ink focus:outline-none"
                 />
               </div>
-            </form>
+            </Form>
             <a
               href={switchLocaleHref}
               hrefLang={locale === 'ar' ? 'en' : 'ar'}

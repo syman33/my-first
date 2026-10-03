@@ -188,6 +188,24 @@
     margin: 2rem 0 0.75rem;
     color: var(--color-ink);
   }
+  .prose-velora h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.5rem;
+    color: var(--color-ink);
+  }
+  .prose-velora strong {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .prose-velora hr {
+    border: 0;
+    border-top: 1px solid var(--color-line);
+    margin: 2.5rem 0;
+  }
+  .prose-velora > :first-child {
+    margin-top: 0;
+  }
 
   .prose-velora p,
   .prose-velora ul,
