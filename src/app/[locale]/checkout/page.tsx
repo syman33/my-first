@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { VerificationBanner } from '@/components/account/verification-banner'
 import { CheckoutForm } from '@/components/checkout/checkout-form'
 import { ButtonLink } from '@/components/ui/button'
 import { getDictionary } from '@/i18n'
@@ -24,12 +25,13 @@ export default async function CheckoutPage({ params }: PageProps<'/[locale]/chec
   if (!isLocale(locale)) notFound()
   const { user } = await requireUserPage(locale, `/${locale}/checkout`)
   const dict = getDictionary(locale)
-  const [baseCart, addresses, shipping, payments, cod] = await Promise.all([
+  const [baseCart, addresses, shipping, payments, cod, checkoutSettings] = await Promise.all([
     getCartView({ userId: user.id }, locale, { userId: user.id }),
     listAddresses(user.id),
     getSettings('shipping'),
     getSettings('payments'),
     getSettings('cod'),
+    getSettings('checkout'),
   ])
   // Preselect an online method when one is available, and price the bag for that exact choice.
   const baseOptions = paymentMethodOptions(payments, cod, baseCart.totals)
@@ -73,6 +75,19 @@ export default async function CheckoutPage({ params }: PageProps<'/[locale]/chec
   return (
     <div className="container-luxe py-10 lg:py-14">
       {header}
+      {checkoutSettings.requireEmailVerification && !user.emailVerified ? (
+        <div className="mt-6" data-testid="checkout-verify-email">
+          <VerificationBanner
+            locale={locale}
+            t={{
+              banner: dict.checkout.verifyFirst,
+              resend: dict.auth.verify.resend,
+              resent: dict.auth.verify.resent,
+            }}
+            genericError={dict.errors.generic}
+          />
+        </div>
+      ) : null}
       <div className="mt-8">
         <CheckoutForm
           locale={locale}

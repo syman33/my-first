@@ -213,6 +213,7 @@ const ar = {
     detailsTitle: 'بيانات التواصل',
     emailLabel: 'البريد الإلكتروني',
     phoneLabel: 'الهاتف',
+    whatsappLabel: 'واتساب',
     addressLabel: 'العنوان',
   },
 }
@@ -406,6 +407,7 @@ const en: typeof ar = {
     detailsTitle: 'Contact details',
     emailLabel: 'Email',
     phoneLabel: 'Phone',
+    whatsappLabel: 'WhatsApp',
     addressLabel: 'Address',
   },
 }

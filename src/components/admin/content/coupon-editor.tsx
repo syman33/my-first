@@ -17,6 +17,7 @@ import { Checkbox, Field, Input, Select, Textarea } from '@/components/ui/field'
 import { type Dictionary, plural } from '@/i18n'
 import type { Locale } from '@/i18n/config'
 import { ApiClientError, apiRequest } from '@/lib/client/api'
+import { bpsToPercent, percentToBps } from '@/utils/percent'
 
 export interface CouponRow {
   id: string
@@ -58,22 +59,6 @@ interface Values {
   productSkus: string
   categoryIds: string[]
   isActive: boolean
-}
-
-/** "12.5" (%) → 1250 bps; at most two decimals. */
-function percentToBps(value: string): number | undefined {
-  const text = value.trim().replace('٫', '.')
-  if (!/^\d{1,3}(\.\d{1,2})?$/.test(text)) return undefined
-  const [whole, fraction = ''] = text.split('.')
-  return Number(whole) * 100 + Number(fraction.padEnd(2, '0'))
-}
-
-function bpsToPercent(bps: number): string {
-  const whole = Math.floor(bps / 100)
-  const fraction = bps % 100
-  return fraction === 0
-    ? String(whole)
-    : `${whole}.${String(fraction).padStart(2, '0').replace(/0$/, '')}`
 }
 
 interface EditorProps {

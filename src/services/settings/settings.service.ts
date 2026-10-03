@@ -1,9 +1,10 @@
 import 'server-only'
 import { prisma, type DbClient } from '@/db/client'
 import { type Prisma } from '@/generated/prisma/client'
+import { logger } from '@/lib/logger'
 import {
   type AllSettings,
-  parseSettings,
+  parseStoredSettings,
   SETTINGS_GROUPS,
   type SettingsGroup,
   type SettingsOf,
@@ -17,19 +18,28 @@ import { type AuditContext, diffFields, recordAudit } from '@/services/audit/aud
  * requires a data migration.
  */
 
+/** Stored settings with invalid keys replaced by defaults; the problem is logged, never fatal. */
+function readStoredSettings<G extends SettingsGroup>(group: G, value: unknown): SettingsOf<G> {
+  const { settings, invalidKeys } = parseStoredSettings(group, value)
+  if (invalidKeys.length > 0) {
+    logger.error('settings.invalid_stored_value', { group, keys: invalidKeys })
+  }
+  return settings
+}
+
 export async function getSettings<G extends SettingsGroup>(
   group: G,
   db: DbClient = prisma,
 ): Promise<SettingsOf<G>> {
   const row = await db.setting.findUnique({ where: { key: group }, select: { value: true } })
-  return parseSettings(group, row?.value ?? {})
+  return readStoredSettings(group, row?.value ?? {})
 }
 
 export async function getAllSettings(db: DbClient = prisma): Promise<AllSettings> {
   const rows = await db.setting.findMany({ select: { key: true, value: true } })
   const byKey = new Map(rows.map((r) => [r.key, r.value]))
   const out = {} as Record<SettingsGroup, unknown>
-  for (const group of SETTINGS_GROUPS) out[group] = parseSettings(group, byKey.get(group) ?? {})
+  for (const group of SETTINGS_GROUPS) out[group] = readStoredSettings(group, byKey.get(group))
   return out as AllSettings
 }
 

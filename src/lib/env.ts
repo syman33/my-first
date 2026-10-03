@@ -43,8 +43,6 @@ const EnvSchema = z
     MOYASAR_SECRET_KEY: optionalString,
     MOYASAR_PUBLISHABLE_KEY: optionalString,
     MOYASAR_WEBHOOK_SECRET: optionalString,
-    PAYMENT_SESSION_TTL_MINUTES: z.coerce.number().int().min(5).max(120).default(20),
-    INVENTORY_RESERVATION_TTL_MINUTES: z.coerce.number().int().min(10).max(240).default(30),
 
     SHIPPING_PROVIDER: z.enum(['manual', 'mock']).default('manual'),
 

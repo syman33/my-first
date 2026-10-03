@@ -1,6 +1,7 @@
 const ar = {
   title: 'إتمام الطلب',
   secure: 'دفع آمن',
+  verifyFirst: 'لإتمام الطلب، أكّد بريدك الإلكتروني أولاً من الرابط الذي أرسلناه إليك.',
   steps: {
     address: 'عنوان التوصيل',
     delivery: 'طريقة التوصيل',
@@ -64,6 +65,7 @@ const ar = {
 const en: typeof ar = {
   title: 'Checkout',
   secure: 'Secure checkout',
+  verifyFirst: 'To place an order, first confirm your email address using the link we sent you.',
   steps: {
     address: 'Delivery address',
     delivery: 'Delivery method',

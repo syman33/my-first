@@ -180,6 +180,9 @@ const en: Dictionary = {
       IMPORT_INVALID: 'The import file contains errors.',
       SLUG_TAKEN: 'This URL slug is already used by another product.',
       SKU_TAKEN: 'This SKU is already in use.',
+      EMAIL_NOT_VERIFIED:
+        'Confirm your email address to place an order. We sent you a confirmation link.',
+      LAST_ADMIN: 'At least one active administrator must remain.',
     },
     coupon: {
       NOT_FOUND: 'This discount code does not exist.',
@@ -228,6 +231,11 @@ const en: Dictionary = {
       dateOrder: 'The end must be after the start.',
       codeTaken: 'This code is already in use.',
       unknownSku: 'Some of these SKUs do not exist.',
+      rangeOrder: 'The minimum must not be higher than the maximum.',
+      vatNumber: 'VAT numbers have 15 digits and start and end with 3.',
+      commercialRegistration: 'Commercial registration numbers have 10 digits.',
+      emailTaken: 'This email belongs to another account.',
+      permissionNotGrantable: 'This permission is reserved for administrators.',
     },
   },
 }

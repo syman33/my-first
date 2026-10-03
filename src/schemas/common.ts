@@ -42,6 +42,18 @@ export function normalizeSaudiMobile(input: string): string | null {
   return match ? `+966${match[1]}` : null
 }
 
+/**
+ * Any international number in E.164 (+<country><number>, 8–15 digits), e.g. a
+ * WhatsApp Business line. Saudi mobiles may be typed in local form (05…).
+ */
+export function normalizeInternationalPhone(input: string): string | null {
+  const saudi = normalizeSaudiMobile(input)
+  if (saudi) return saudi
+  const digits = latinDigits(input).replace(/[\s()-]/g, '')
+  const match = /^(?:\+|00)([1-9]\d{7,14})$/.exec(digits)
+  return match ? `+${match[1]}` : null
+}
+
 export const saudiMobileField = z
   .string({ error: 'required' })
   .trim()

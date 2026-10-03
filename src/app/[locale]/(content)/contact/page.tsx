@@ -7,6 +7,7 @@ import { isLocale } from '@/i18n/config'
 import { getCurrentSession } from '@/lib/auth/current-user'
 import { openGraph, samePathAlternates } from '@/lib/seo'
 import { getSettings } from '@/services/settings/settings.service'
+import { formatSaudiMobile, whatsappHref } from '@/utils/phone'
 
 export async function generateMetadata({
   params,
@@ -32,6 +33,7 @@ export default async function ContactPage({ params }: PageProps<'/[locale]/conta
   const dict = getDictionary(locale)
   const t = dict.store.contact
   const [store, session] = await Promise.all([getSettings('store'), getCurrentSession()])
+  const whatsapp = store.whatsapp ? whatsappHref(store.whatsapp) : null
   return (
     <div className="container-luxe py-10 lg:py-16">
       <Breadcrumbs
@@ -84,6 +86,21 @@ export default async function ContactPage({ params }: PageProps<'/[locale]/conta
                 </a>
               </dd>
             </div>
+            {whatsapp && store.whatsapp ? (
+              <div>
+                <dt className="text-muted">{t.whatsappLabel}</dt>
+                <dd>
+                  <a
+                    href={whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ltr-nums text-ink underline-offset-4 hover:underline"
+                  >
+                    {formatSaudiMobile(store.whatsapp)}
+                  </a>
+                </dd>
+              </div>
+            ) : null}
             <div>
               <dt className="text-muted">{t.addressLabel}</dt>
               <dd>{locale === 'ar' ? store.addressAr : store.addressEn}</dd>

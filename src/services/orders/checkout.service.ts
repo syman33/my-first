@@ -26,7 +26,7 @@ export interface PlacedOrder {
 }
 
 export interface PlaceOrderContext {
-  user: { id: string; email: string }
+  user: { id: string; email: string; emailVerified: boolean }
   locale: Locale
   idempotencyKey: string
   audit: AuditContext
@@ -123,6 +123,9 @@ async function placeOrderOnce(input: CheckoutInput, ctx: PlaceOrderContext): Pro
             ? { minOrderAmount: view.couponIssue.minOrderAmount }
             : {},
         )
+      }
+      if (settings.checkout.requireEmailVerification && !ctx.user.emailVerified) {
+        throw new AppError('EMAIL_NOT_VERIFIED', 'Email address not confirmed', { status: 403 })
       }
       if (input.shippingMethod === 'EXPRESS' && !settings.shipping.expressEnabled) {
         throw new AppError('SHIPPING_METHOD_UNAVAILABLE', 'Express delivery is not offered', {
