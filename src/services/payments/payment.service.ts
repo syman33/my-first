@@ -1,14 +1,21 @@
 import 'server-only'
 import { prisma, type DbClient } from '@/db/client'
 import { isUniqueViolation } from '@/db/errors'
+import { transactionWithRetry } from '@/db/transaction'
 import type { Prisma } from '@/generated/prisma/client'
 import type { Locale } from '@/i18n/config'
-import { AppError, OrderNotFoundError } from '@/lib/errors'
+import { AppError, OrderNotFoundError, ValidationError } from '@/lib/errors'
 import { logger } from '@/lib/logger'
 import { emitAlert } from '@/lib/monitoring'
 import { type AuditContext, recordAudit, SYSTEM_ACTOR } from '@/services/audit/audit.service'
 import { enqueueEvent } from '@/services/events/outbox.service'
-import { cancelOrderInTx, confirmOrderInTx } from '@/services/orders/order-lifecycle.service'
+import {
+  cancelOrderInTx,
+  confirmOrderInTx,
+  history,
+  lockOrder,
+} from '@/services/orders/order-lifecycle.service'
+import { canTransition } from '@/lib/orders/state-machine'
 import { getSettings } from '@/services/settings/settings.service'
 import type { ProviderPaymentState } from './provider'
 import { getPaymentProvider, providerByName } from './registry'
@@ -417,21 +424,31 @@ export async function reconcilePayment(
   }
 }
 
+export interface RefundRequest {
+  /** Halalas */
+  amount: number
+  reason: string
+  /** Makes a retried request return the original refund instead of refunding twice. */
+  idempotencyKey?: string
+  returnRequestId?: string | null
+}
+
+export interface RefundOutcome {
+  refundId: string
+  status: 'SUCCEEDED' | 'PENDING' | 'FAILED'
+}
+
 /**
- * Refund (part of) a captured payment through its provider. The refund row
- * is written first (PENDING) so a provider timeout never loses track of it.
+ * Lock a payment for a balance change. The order row is locked first, the
+ * same order every other payment path uses (webhooks, cancellation), so
+ * the two locks can never deadlock against each other.
  */
-export async function refundPayment(
-  paymentId: string,
-  input: {
-    amount: number
-    reason: string
-    idempotencyKey?: string
-    returnRequestId?: string | null
-  },
-  audit: AuditContext,
-): Promise<{ refundId: string; status: 'SUCCEEDED' | 'PENDING' | 'FAILED' }> {
-  const payment = await prisma.payment.findUnique({
+async function lockPayment(tx: DbClient, paymentId: string) {
+  const ref = await tx.payment.findUnique({ where: { id: paymentId }, select: { orderId: true } })
+  if (!ref) throw new AppError('PAYMENT_NOT_FOUND', 'Payment not found', { status: 404 })
+  const order = await lockOrder(tx, ref.orderId)
+  await tx.$queryRaw`SELECT id FROM payments WHERE id = ${paymentId}::uuid FOR UPDATE`
+  const payment = await tx.payment.findUniqueOrThrow({
     where: { id: paymentId },
     select: {
       id: true,
@@ -443,30 +460,148 @@ export async function refundPayment(
       refundedAmount: true,
     },
   })
-  if (!payment) throw new AppError('PAYMENT_NOT_FOUND', 'Payment not found', { status: 404 })
-  if (payment.status !== 'PAID' && payment.status !== 'PARTIALLY_REFUNDED') {
-    throw new AppError('REFUND_NOT_ALLOWED', 'Only captured payments can be refunded', {
+  return { ...payment, order }
+}
+
+type LockedPayment = Awaited<ReturnType<typeof lockPayment>>
+
+/**
+ * Money still refundable on a payment: captured − refunded − refunds in
+ * flight. Pending refunds count, so two concurrent refunds can never add up to
+ * more than was captured.
+ */
+async function refundableBalance(tx: DbClient, payment: LockedPayment): Promise<number> {
+  if (payment.status !== 'PAID' && payment.status !== 'PARTIALLY_REFUNDED') return 0
+  const pending = await tx.refund.aggregate({
+    where: { paymentId: payment.id, status: 'PENDING' },
+    _sum: { amount: true },
+  })
+  return payment.amount - payment.refundedAmount - (pending._sum.amount ?? 0)
+}
+
+/** Returns an earlier refund made with the same key, or null. */
+async function replayedRefund(
+  tx: DbClient,
+  paymentId: string,
+  idempotencyKey: string | undefined,
+): Promise<RefundOutcome | null> {
+  if (!idempotencyKey) return null
+  const existing = await tx.refund.findUnique({
+    where: { idempotencyKey },
+    select: { id: true, status: true, paymentId: true },
+  })
+  if (!existing) return null
+  if (existing.paymentId !== paymentId) {
+    throw new AppError('IDEMPOTENCY_CONFLICT', 'Idempotency key already used for another payment', {
       status: 409,
     })
   }
-  const refundable = payment.amount - payment.refundedAmount
-  if (!Number.isInteger(input.amount) || input.amount <= 0 || input.amount > refundable) {
+  return { refundId: existing.id, status: existing.status }
+}
+
+function assertRefundable(amount: number, refundable: number): void {
+  if (!Number.isSafeInteger(amount) || amount <= 0 || amount > refundable) {
     throw new AppError('REFUND_NOT_ALLOWED', 'Refund amount exceeds the refundable balance', {
       status: 422,
-      details: { refundable },
+      details: { refundable: Math.max(refundable, 0) },
     })
   }
-  if (payment.provider === 'cod') {
-    throw new AppError(
-      'REFUND_NOT_ALLOWED',
-      'Cash payments are refunded outside the payment provider',
-      { status: 409 },
-    )
-  }
+}
 
-  let refund
-  try {
-    refund = await prisma.refund.create({
+/**
+ * Book a successful refund: payment and order balances, the order's refund
+ * status, the "refund required" flag, and — when a delivered order has been
+ * refunded in full — the DELIVERED → REFUNDED transition.
+ */
+async function applySucceededRefund(
+  tx: DbClient,
+  payment: LockedPayment,
+  refundId: string,
+  amount: number,
+  audit: AuditContext,
+): Promise<void> {
+  const updated = await tx.payment.update({
+    where: { id: payment.id },
+    data: { refundedAmount: { increment: amount } },
+    select: { amount: true, refundedAmount: true },
+  })
+  await tx.payment.update({
+    where: { id: payment.id },
+    data: { status: updated.refundedAmount >= updated.amount ? 'REFUNDED' : 'PARTIALLY_REFUNDED' },
+  })
+
+  const { order } = payment
+  const captured = await tx.payment.aggregate({
+    where: {
+      orderId: order.id,
+      status: { in: ['PAID', 'PARTIALLY_REFUNDED', 'REFUNDED'] },
+    },
+    _sum: { amount: true, refundedAmount: true },
+  })
+  const full = (captured._sum.refundedAmount ?? 0) >= (captured._sum.amount ?? 0)
+  const now = new Date()
+  const toRefunded = full && canTransition(order.status, 'REFUNDED')
+  await tx.order.update({
+    where: { id: order.id },
+    data: {
+      paymentStatus: full ? 'REFUNDED' : 'PARTIALLY_REFUNDED',
+      refundedAt: full ? now : undefined,
+      ...(toRefunded ? { status: 'REFUNDED' as const, version: { increment: 1 } } : {}),
+      // A full refund settles "refund required" flags.
+      attentionReason:
+        full &&
+        (order.attentionReason === 'REFUND_REQUIRED' ||
+          order.attentionReason === 'PAID_AFTER_CANCELLATION')
+          ? null
+          : order.attentionReason,
+    },
+  })
+  if (toRefunded) {
+    await history(tx, order, 'REFUNDED', audit, 'Refunded in full')
+    await recordAudit(tx, audit, {
+      action: 'order.refunded',
+      entityType: 'order',
+      entityId: order.id,
+      metadata: { orderNumber: order.orderNumber, from: order.status },
+    })
+  }
+  await enqueueEvent(tx, {
+    type: 'ORDER_REFUNDED',
+    payload: { orderId: order.id, refundId },
+    aggregateType: 'order',
+    aggregateId: order.id,
+  })
+}
+
+/**
+ * Refund all or part of a captured online payment through its provider.
+ * The refund row is written PENDING first, under a lock on the payment, so
+ * the amount is held against the balance while the provider call is in
+ * flight; the outcome is then booked in a second transaction.
+ */
+export async function refundPayment(
+  paymentId: string,
+  input: RefundRequest,
+  audit: AuditContext,
+): Promise<RefundOutcome> {
+  const started = await prisma.$transaction(async (tx) => {
+    const payment = await lockPayment(tx, paymentId)
+    const replay = await replayedRefund(tx, paymentId, input.idempotencyKey)
+    if (replay) return { kind: 'replay' as const, outcome: replay }
+    if (payment.status !== 'PAID' && payment.status !== 'PARTIALLY_REFUNDED') {
+      throw new AppError('REFUND_NOT_ALLOWED', 'Only captured payments can be refunded', {
+        status: 409,
+      })
+    }
+    if (payment.provider === 'cod') {
+      throw new AppError(
+        'REFUND_NOT_ALLOWED',
+        'Cash payments are refunded outside the payment provider',
+        { status: 409 },
+      )
+    }
+    assertRefundable(input.amount, await refundableBalance(tx, payment))
+    const refund = await tx.refund.create({
       data: {
         orderId: payment.orderId,
         paymentId: payment.id,
@@ -476,16 +611,12 @@ export async function refundPayment(
         createdById: audit.actor.id,
         idempotencyKey: input.idempotencyKey ?? null,
       },
+      select: { id: true },
     })
-  } catch (error) {
-    if (input.idempotencyKey && isUniqueViolation(error)) {
-      const existing = await prisma.refund.findUniqueOrThrow({
-        where: { idempotencyKey: input.idempotencyKey },
-      })
-      return { refundId: existing.id, status: existing.status }
-    }
-    throw error
-  }
+    return { kind: 'started' as const, refund, payment }
+  })
+  if (started.kind === 'replay') return started.outcome
+  const { refund, payment } = started
 
   const provider =
     payment.provider === 'mock' || payment.provider === 'moyasar'
@@ -510,48 +641,21 @@ export async function refundPayment(
           failureMessage: 'Payment has no provider reference',
         }
 
-  await prisma.$transaction(async (tx) => {
+  // The provider has answered: book it, retrying on transient lock conflicts.
+  await transactionWithRetry('refund.settle', async (tx) => {
+    const locked = await lockPayment(tx, payment.id)
     await tx.refund.update({
       where: { id: refund.id },
       data: {
         status: result.status,
         providerRefundId: result.providerRefundId || null,
-        failureMessage: 'failureMessage' in result ? (result.failureMessage ?? null) : null,
+        failureMessage:
+          'failureMessage' in result ? (result.failureMessage?.slice(0, 500) ?? null) : null,
         completedAt: result.status === 'SUCCEEDED' ? new Date() : null,
       },
     })
-    if (result.status === 'SUCCEEDED') {
-      const refundedAmount = payment.refundedAmount + input.amount
-      const full = refundedAmount === payment.amount
-      await tx.payment.update({
-        where: { id: payment.id },
-        data: { refundedAmount, status: full ? 'REFUNDED' : 'PARTIALLY_REFUNDED' },
-      })
-      const order = await tx.order.findUniqueOrThrow({
-        where: { id: payment.orderId },
-        select: { attentionReason: true },
-      })
-      await tx.order.update({
-        where: { id: payment.orderId },
-        data: {
-          paymentStatus: full ? 'REFUNDED' : 'PARTIALLY_REFUNDED',
-          refundedAt: full ? new Date() : undefined,
-          // A refund settles "refund required" flags.
-          attentionReason:
-            full &&
-            (order.attentionReason === 'REFUND_REQUIRED' ||
-              order.attentionReason === 'PAID_AFTER_CANCELLATION')
-              ? null
-              : order.attentionReason,
-        },
-      })
-      await enqueueEvent(tx, {
-        type: 'ORDER_REFUNDED',
-        payload: { orderId: payment.orderId, refundId: refund.id },
-        aggregateType: 'order',
-        aggregateId: payment.orderId,
-      })
-    }
+    if (result.status === 'SUCCEEDED')
+      await applySucceededRefund(tx, locked, refund.id, input.amount, audit)
     await recordAudit(tx, audit, {
       action: `refund.${result.status.toLowerCase()}`,
       entityType: 'refund',
@@ -560,6 +664,62 @@ export async function refundPayment(
     })
   })
   return { refundId: refund.id, status: result.status }
+}
+
+/**
+ * Record a refund paid outside any provider — a cash-on-delivery order
+ * refunded by bank transfer. Staff supply the transfer reference; the booking
+ * is otherwise identical to a provider refund.
+ */
+export async function recordManualRefund(
+  paymentId: string,
+  input: RefundRequest & { reference: string },
+  audit: AuditContext,
+): Promise<RefundOutcome> {
+  return prisma.$transaction(async (tx) => {
+    const payment = await lockPayment(tx, paymentId)
+    const replay = await replayedRefund(tx, paymentId, input.idempotencyKey)
+    if (replay) return replay
+    if (payment.provider !== 'cod') {
+      throw new AppError(
+        'REFUND_NOT_ALLOWED',
+        'Online payments are refunded through their payment provider',
+        { status: 409 },
+      )
+    }
+    if (payment.status !== 'PAID' && payment.status !== 'PARTIALLY_REFUNDED') {
+      throw new AppError('REFUND_NOT_ALLOWED', 'Only collected payments can be refunded', {
+        status: 409,
+      })
+    }
+    assertRefundable(input.amount, await refundableBalance(tx, payment))
+    const reference = input.reference.trim().slice(0, 100)
+    if (!reference)
+      throw new ValidationError({ reference: 'required' }, 'Transfer reference required')
+    const refund = await tx.refund.create({
+      data: {
+        orderId: payment.orderId,
+        paymentId: payment.id,
+        amount: input.amount,
+        reason: input.reason.slice(0, 500),
+        status: 'SUCCEEDED',
+        providerRefundId: `manual:${reference}`,
+        completedAt: new Date(),
+        returnRequestId: input.returnRequestId ?? null,
+        createdById: audit.actor.id,
+        idempotencyKey: input.idempotencyKey ?? null,
+      },
+      select: { id: true },
+    })
+    await applySucceededRefund(tx, payment, refund.id, input.amount, audit)
+    await recordAudit(tx, audit, {
+      action: 'refund.manual',
+      entityType: 'refund',
+      entityId: refund.id,
+      metadata: { paymentId: payment.id, amount: input.amount, reason: input.reason, reference },
+    })
+    return { refundId: refund.id, status: 'SUCCEEDED' as const }
+  })
 }
 
 /** After a paid order is cancelled before shipping, refund it in full automatically. */

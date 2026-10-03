@@ -7,6 +7,9 @@ import { POST as payRoute } from '@/app/api/orders/[id]/pay/route'
 import { POST as webhookRoute } from '@/app/api/webhooks/payments/[provider]/route'
 import { prisma } from '@/db/client'
 import { hashPassword } from '@/lib/auth/password'
+import { type AuditContext, SYSTEM_ACTOR } from '@/services/audit/audit.service'
+import { markDelivered, shipOrder } from '@/services/orders/fulfillment.service'
+import { confirmOrder } from '@/services/orders/order-lifecycle.service'
 import { MOCK_SIGNATURE_HEADER, signMockWebhook } from '@/services/payments/mock.provider'
 import type { CartView } from '@/types/cart'
 import { createProduct, createUser } from './factories'
@@ -154,4 +157,66 @@ export async function sendMockWebhook(
     params: { provider: 'mock' },
     noOrigin: true,
   })
+}
+
+/** A staff member's audit context (shipments and refunds reference a real user). */
+export async function staffAudit(): Promise<AuditContext> {
+  const staff = await createUser({
+    role: 'STAFF',
+    email: `staff-${crypto.randomUUID()}@example.test`,
+  })
+  return { actor: { id: staff.id, type: 'STAFF' } }
+}
+
+/**
+ * A customer's order, placed through the real checkout. Online orders are
+ * paid through a signed mock webhook; COD orders are confirmed by staff.
+ */
+export async function confirmedOrder(
+  email: string,
+  options: {
+    paymentMethod?: 'MADA' | 'COD'
+    quantity?: number
+    stock?: number
+    price?: number
+  } = {},
+) {
+  const shopper = await signedInCustomer(email)
+  const created = await createProduct({ stock: options.stock ?? 5, price: options.price ?? 50_000 })
+  await addToBag(shopper.client, created.variant.id, options.quantity ?? 1)
+  const paymentMethod = options.paymentMethod ?? 'MADA'
+  const placed = await placeOrder(shopper.client, shopper.address.id, { paymentMethod })
+  expect(placed.status).toBe(200)
+  const orderId = placed.body.data!.order.orderId
+  if (paymentMethod === 'COD') {
+    await confirmOrder(orderId, { actor: SYSTEM_ACTOR })
+  } else {
+    const providerPaymentId = await startPayment(shopper.client, orderId)
+    const payment = await prisma.payment.findFirstOrThrow({ where: { orderId } })
+    const res = await sendMockWebhook(
+      mockWebhookBody({
+        providerPaymentId,
+        status: 'paid',
+        amount: payment.amount,
+        orderId,
+        paymentId: payment.id,
+      }),
+    )
+    expect(res.body).toMatchObject({ status: 'processed' })
+  }
+  const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } })
+  expect(order.status).toBe('CONFIRMED')
+  return { ...shopper, ...created, orderId, order }
+}
+
+/** A confirmed order shipped and delivered by staff. */
+export async function deliveredOrder(
+  email: string,
+  options: Parameters<typeof confirmedOrder>[1] = {},
+) {
+  const confirmed = await confirmedOrder(email, options)
+  const audit = await staffAudit()
+  await shipOrder(confirmed.orderId, {}, audit)
+  await markDelivered(confirmed.orderId, audit)
+  return { ...confirmed, audit }
 }

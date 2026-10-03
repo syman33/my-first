@@ -2,9 +2,11 @@ import type {
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
+  ReturnStatus,
   ShipmentStatus,
   ShippingMethod,
 } from '@/generated/prisma/enums'
+import type { ReturnReason } from '@/lib/orders/returns'
 
 export interface CustomerOrderSummary {
   id: string
@@ -80,4 +82,21 @@ export interface CustomerOrderDetail {
   canCancel: boolean
   canPay: boolean
   paymentDeadline: Date | null
+  returns: CustomerReturnView[]
+  /** Present while a return can be requested: the deadline and what is still returnable. */
+  returnable: { deadline: Date; items: { orderItemId: string; maxQuantity: number }[] } | null
+}
+
+export interface CustomerReturnView {
+  id: string
+  returnNumber: string
+  status: ReturnStatus
+  reason: ReturnReason
+  createdAt: Date
+  items: { orderItemId: string; name: string; variantName: string | null; quantity: number }[]
+  /** Successfully refunded for this return (halalas). */
+  refundedAmount: number
+  /** The team's explanation, shown when a return is rejected. */
+  rejectionNote: string | null
+  canWithdraw: boolean
 }

@@ -19,6 +19,9 @@ export interface OutboxPayloads {
   ORDER_CANCELLED: { orderId: string; reason: string | null }
   ORDER_REFUNDED: { orderId: string; refundId: string }
   RETURN_REQUESTED: { returnRequestId: string }
+  RETURN_APPROVED: { returnRequestId: string }
+  RETURN_REJECTED: { returnRequestId: string }
+  RETURN_COMPLETED: { returnRequestId: string; refundId: string | null }
   CONTACT_MESSAGE_RECEIVED: { contactMessageId: string }
   NEWSLETTER_SUBSCRIBED: { subscriberId: string; sealedUnsubscribeUrl: string }
 }

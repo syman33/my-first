@@ -140,6 +140,7 @@ export const RATE_LIMITS = {
   cartWrite: { name: 'cart:subject', limit: 120, windowSeconds: 60 },
   checkout: { name: 'checkout:user', limit: 10, windowSeconds: 10 * 60 },
   paymentInit: { name: 'payment:user', limit: 10, windowSeconds: 10 * 60 },
+  returnRequest: { name: 'return:user', limit: 10, windowSeconds: 60 * 60 },
   search: { name: 'search:ip', limit: 120, windowSeconds: 60 },
   reviews: { name: 'review:user', limit: 10, windowSeconds: 60 * 60 },
   uploads: { name: 'upload:user', limit: 60, windowSeconds: 10 * 60 },

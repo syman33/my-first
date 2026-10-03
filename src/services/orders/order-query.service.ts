@@ -2,9 +2,11 @@ import 'server-only'
 import { prisma } from '@/db/client'
 import type { Locale } from '@/i18n/config'
 import { OrderNotFoundError } from '@/lib/errors'
+import { canTransitionReturn, type ReturnReason } from '@/lib/orders/returns'
 import { customerMayCancel } from '@/lib/orders/state-machine'
 import { getSettings } from '@/services/settings/settings.service'
 import type { CustomerOrderDetail, CustomerOrderSummary } from '@/types/orders'
+import { returnableLines } from './returns.service'
 
 export const ORDERS_PAGE_SIZE = 10
 
@@ -76,9 +78,17 @@ export async function getCustomerOrder(
           deliveredAt: true,
         },
       },
+      returnRequests: {
+        orderBy: { createdAt: 'desc' },
+        include: {
+          items: { orderBy: { id: 'asc' } },
+          refunds: { where: { status: 'SUCCEEDED' }, select: { amount: true } },
+        },
+      },
     },
   })
   if (!order) throw new OrderNotFoundError()
+  const returnable = await returnableLines(prisma, order, now)
   const { customerCancellableStatuses } = await getSettings('checkout')
   const ar = locale === 'ar'
   const payment = order.payments[0] ?? null
@@ -142,6 +152,36 @@ export async function getCustomerOrder(
       order.reservationExpiresAt !== null &&
       order.reservationExpiresAt > now,
     paymentDeadline: order.paymentMethod !== 'COD' ? order.reservationExpiresAt : null,
+    returns: order.returnRequests.map((request) => ({
+      id: request.id,
+      returnNumber: request.returnNumber,
+      status: request.status,
+      reason: request.reason as ReturnReason,
+      createdAt: request.createdAt,
+      items: request.items.map((returned) => {
+        const item = order.items.find((line) => line.id === returned.orderItemId)
+        return {
+          orderItemId: returned.orderItemId,
+          name: item ? (ar ? item.productNameAr : item.productNameEn) : '',
+          variantName: item ? ((ar ? item.variantNameAr : item.variantNameEn) ?? null) : null,
+          quantity: returned.quantity,
+        }
+      }),
+      refundedAmount: request.refunds.reduce((sum, refund) => sum + refund.amount, 0),
+      rejectionNote: request.status === 'REJECTED' ? request.adminNote : null,
+      canWithdraw:
+        request.status === 'REQUESTED' && canTransitionReturn(request.status, 'CANCELLED'),
+    })),
+    returnable:
+      returnable.deadline && returnable.lines.length > 0
+        ? {
+            deadline: returnable.deadline,
+            items: returnable.lines.map((line) => ({
+              orderItemId: line.orderItemId,
+              maxQuantity: line.returnableQuantity,
+            })),
+          }
+        : null,
   }
 }
 

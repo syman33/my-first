@@ -21,7 +21,7 @@ import { getSettings } from '@/services/settings/settings.service'
  * order can never interleave.
  */
 
-async function lockOrder(tx: DbClient, orderId: string) {
+export async function lockOrder(tx: DbClient, orderId: string) {
   const locked = await tx.$queryRaw<
     { id: string }[]
   >`SELECT id FROM orders WHERE id = ${orderId}::uuid FOR UPDATE`
@@ -29,7 +29,9 @@ async function lockOrder(tx: DbClient, orderId: string) {
   return tx.order.findUniqueOrThrow({
     where: { id: orderId },
     include: {
-      items: { select: { variantId: true, sku: true, quantity: true, productId: true } },
+      items: {
+        select: { id: true, variantId: true, sku: true, quantity: true, productId: true },
+      },
       payments: { select: { id: true, status: true } },
     },
   })
@@ -44,7 +46,7 @@ function stockLines(order: LockedOrder): StockLine[] {
   )
 }
 
-async function history(
+export async function history(
   tx: DbClient,
   order: { id: string; status: OrderStatus },
   to: OrderStatus,

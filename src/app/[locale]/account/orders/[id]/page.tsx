@@ -5,6 +5,7 @@ import type { Route } from 'next'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { CancelOrderButton } from '@/components/orders/cancel-order-button'
+import { OrderReturns } from '@/components/orders/order-returns'
 import { OrderStatusBadge } from '@/components/orders/order-status-badge'
 import { PayOrderButton } from '@/components/orders/pay-order-button'
 import { getDictionary, interpolate } from '@/i18n'
@@ -233,6 +234,8 @@ export default async function OrderDetailPage({
           <p className="mt-2 text-sm whitespace-pre-line text-text">{order.customerNote}</p>
         </section>
       ) : null}
+
+      <OrderReturns locale={locale} order={order} dict={dict} />
 
       <section aria-labelledby="order-timeline">
         <h3 id="order-timeline" className="text-sm font-medium text-ink">

@@ -211,6 +211,8 @@ const en: Dictionary = {
       date: 'Invalid date.',
       rating: 'Choose a rating from 1 to 5.',
       consent: 'You must agree to continue.',
+      returnItemsRequired: 'Select at least one item to return.',
+      trackingTaken: 'This tracking number is already used by another shipment.',
     },
   },
 }

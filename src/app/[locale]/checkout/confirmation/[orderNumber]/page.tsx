@@ -50,9 +50,12 @@ export default async function ConfirmationPage({
       <p className="mt-6 max-w-lg text-text" data-testid="confirmation-next">
         {next}
       </p>
-      <p className="mt-2 text-sm text-muted">
-        {interpolate(t.emailNote, { email: order.shippingEmail })}
-      </p>
+      {/* Emails go out for COD orders and paid orders only (see order notification handlers). */}
+      {order.paymentMethod === 'COD' || order.paymentStatus === 'PAID' ? (
+        <p className="mt-2 text-sm text-muted">
+          {interpolate(t.emailNote, { email: order.shippingEmail })}
+        </p>
+      ) : null}
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         <ButtonLink href={`/${locale}/account/orders/${order.id}`}>{t.viewOrder}</ButtonLink>
         <ButtonLink href={`/${locale}/shop`} variant="secondary">

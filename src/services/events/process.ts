@@ -2,6 +2,7 @@ import 'server-only'
 import { logger } from '@/lib/logger'
 import { registerEngagementNotificationHandlers } from '@/services/notifications/engagement-handlers'
 import { registerAccountNotificationHandlers } from '@/services/notifications/handlers'
+import { registerOrderNotificationHandlers } from '@/services/notifications/order-handlers'
 import { processOutbox, type OutboxRunResult } from './outbox.service'
 
 let handlersReady = false
@@ -12,6 +13,7 @@ export function ensureOutboxHandlers(): void {
   handlersReady = true
   registerAccountNotificationHandlers()
   registerEngagementNotificationHandlers()
+  registerOrderNotificationHandlers()
 }
 
 /**
