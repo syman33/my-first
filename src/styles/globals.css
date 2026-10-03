@@ -1,0 +1,236 @@
+@import 'tailwindcss';
+
+/*
+ * VÉLORA design tokens.
+ * Brand palette from the identity brief; text colours were adjusted where the
+ * brief's value fails WCAG AA (4.5:1) for body text on the ivory background:
+ *   muted text  #6B6B6B (4.85:1)  — brief #777777 (4.1:1) kept for decorative use
+ *   accent text #7D6342 (5.1:1)   — brief #B89B72 (2.4:1) kept for lines/marks
+ */
+@theme {
+  --color-ink: #171717;
+  --color-ivory: #f7f4ef;
+  --color-paper: #ffffff;
+  --color-champagne: #b89b72;
+  --color-champagne-strong: #7d6342;
+  --color-champagne-soft: #efe7da;
+  --color-text: #202020;
+  --color-muted: #6b6b6b;
+  --color-muted-decorative: #777777;
+  --color-line: #e7e2da;
+  --color-line-strong: #d6cfc3;
+  --color-sand: #efeae2;
+  --color-danger: #a23b32;
+  --color-danger-soft: #f6e6e3;
+  --color-success: #3f6b4e;
+  --color-success-soft: #e5efe8;
+  --color-warning: #8a5a12;
+  --color-warning-soft: #f6ecda;
+
+  --font-sans: var(--font-sans-latin), var(--font-sans-arabic), 'Helvetica Neue', Arial, sans-serif;
+  --font-display: var(--font-display-latin), var(--font-display-arabic), Georgia, serif;
+  --font-display-ar: var(--font-display-arabic), var(--font-display-latin), serif;
+
+  --tracking-luxe: 0.18em;
+  --tracking-wordmark: 0.32em;
+
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --breakpoint-xs: 26rem;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    line-height: 1.7;
+  }
+
+  /* Arabic reads more comfortably with slightly taller line boxes. */
+  html[lang^='ar'] body {
+    line-height: 1.85;
+  }
+
+  /* Display headings: serif Latin, Naskh Arabic. */
+  html[lang^='ar'] .font-display {
+    font-family: var(--font-display-ar);
+  }
+
+  /*
+   * Arabic is a cursive script: letter-spacing breaks the joins between
+   * letters. Tracking utilities are therefore neutralised on Arabic pages
+   * unless an element explicitly opts in (Latin-only content such as the
+   * wordmark, SKUs or order numbers).
+   */
+  html[lang^='ar'] :where([class*='tracking-']):not([data-latin]) {
+    letter-spacing: 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--color-champagne-soft);
+    color: var(--color-ink);
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+  }
+
+  /* Numbers inside RTL text (prices, SKUs, phone numbers) keep LTR order. */
+  .ltr-nums {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-luxe {
+    width: 100%;
+    max-width: 88rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 48rem) {
+    .container-luxe {
+      padding-inline: 2rem;
+    }
+  }
+
+  @media (min-width: 80rem) {
+    .container-luxe {
+      padding-inline: 3rem;
+    }
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: var(--tracking-luxe);
+    text-transform: uppercase;
+    color: var(--color-champagne-strong);
+  }
+
+  html[lang^='ar'] .eyebrow {
+    letter-spacing: 0;
+    font-size: 0.875rem;
+  }
+
+  .skip-link {
+    position: absolute;
+    inset-inline-start: 1rem;
+    top: -4rem;
+    z-index: 100;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 0.75rem 1.25rem;
+    transition: top 0.2s var(--ease-luxe);
+  }
+
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  .prose-velora {
+    max-width: 46rem;
+    color: var(--color-text);
+  }
+
+  .prose-velora h2 {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    line-height: 1.3;
+    margin: 2.5rem 0 1rem;
+    color: var(--color-ink);
+  }
+
+  html[lang^='ar'] .prose-velora h2 {
+    font-family: var(--font-display-ar);
+  }
+
+  .prose-velora h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: var(--color-ink);
+  }
+
+  .prose-velora p,
+  .prose-velora ul,
+  .prose-velora ol {
+    margin: 0 0 1.1rem;
+  }
+
+  .prose-velora ul {
+    list-style: disc;
+    padding-inline-start: 1.25rem;
+  }
+
+  .prose-velora ol {
+    list-style: decimal;
+    padding-inline-start: 1.25rem;
+  }
+
+  .prose-velora a {
+    text-decoration: underline;
+    color: var(--color-ink);
+  }
+
+  .prose-velora table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+  }
+
+  .prose-velora th,
+  .prose-velora td {
+    border-bottom: 1px solid var(--color-line);
+    padding: 0.6rem 0.5rem;
+    text-align: start;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+}
