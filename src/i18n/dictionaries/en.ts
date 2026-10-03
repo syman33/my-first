@@ -224,6 +224,10 @@ const en: Dictionary = {
       publishNeedsImage: 'Add at least one image before publishing.',
       publishNeedsVariant: 'Activate at least one variant before publishing.',
       lastActiveVariant: 'The last active variant of a published product cannot be turned off.',
+      couponCode: 'Codes are 3–40 letters, digits, hyphens or underscores.',
+      dateOrder: 'The end must be after the start.',
+      codeTaken: 'This code is already in use.',
+      unknownSku: 'Some of these SKUs do not exist.',
     },
   },
 }

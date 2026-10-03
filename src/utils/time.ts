@@ -177,3 +177,22 @@ export function eachStoreDay(from: Date, to: Date, timeZone: string = STORE_TIME
   }
   return keys
 }
+
+/** "YYYY-MM-DDTHH:mm" (an <input type="datetime-local"> value) read as store-local time. */
+export function parseStoreDateTimeLocal(value: string, timeZone: string = STORE_TIME_ZONE): Date {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value)
+  if (!m) throw new RangeError(`Invalid local date-time: ${value}`)
+  const [, y, mo, d, h, mi] = m.map(Number) as [number, number, number, number, number, number]
+  const probe = new Date(Date.UTC(y, mo - 1, d, h, mi))
+  if (probe.getUTCMonth() !== mo - 1 || probe.getUTCDate() !== d || h > 23 || mi > 59) {
+    throw new RangeError(`Invalid calendar date-time: ${value}`)
+  }
+  return zonedTimeToUtc({ year: y, month: mo, day: d, hour: h, minute: mi }, timeZone)
+}
+
+/** A UTC instant as the store-local "YYYY-MM-DDTHH:mm" an <input type="datetime-local"> expects. */
+export function toStoreDateTimeLocal(date: Date, timeZone: string = STORE_TIME_ZONE): string {
+  const p = getZonedParts(date, timeZone)
+  const two = (n: number) => String(n).padStart(2, '0')
+  return `${p.year}-${two(p.month)}-${two(p.day)}T${two(p.hour)}:${two(p.minute)}`
+}

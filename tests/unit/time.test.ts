@@ -3,10 +3,12 @@ import {
   eachStoreDay,
   getTimeZoneOffsetMinutes,
   parseStoreDateKey,
+  parseStoreDateTimeLocal,
   resolveDateRange,
   startOfStoreDay,
   storeYear,
   toStoreDateKey,
+  toStoreDateTimeLocal,
   zonedTimeToUtc,
 } from '@/utils/time'
 
@@ -76,5 +78,37 @@ describe('dashboard date ranges', () => {
   it('30d spans exactly thirty days', () => {
     const { from, to } = resolveDateRange('30d', now)
     expect(eachStoreDay(from, to)).toHaveLength(30)
+  })
+})
+
+describe('datetime-local values (admin schedules)', () => {
+  it('reads the value as Riyadh wall-clock time', () => {
+    expect(parseStoreDateTimeLocal('2026-09-23T00:00').toISOString()).toBe(
+      '2026-09-22T21:00:00.000Z',
+    )
+    expect(parseStoreDateTimeLocal('2026-12-31T23:59').toISOString()).toBe(
+      '2026-12-31T20:59:00.000Z',
+    )
+  })
+
+  it('formats an instant back for the input, including midnight', () => {
+    expect(toStoreDateTimeLocal(new Date('2026-09-22T21:00:00.000Z'))).toBe('2026-09-23T00:00')
+    expect(toStoreDateTimeLocal(new Date('2026-03-01T09:45:30.000Z'))).toBe('2026-03-01T12:45')
+    const instant = new Date('2027-01-01T20:59:00.000Z')
+    expect(parseStoreDateTimeLocal(toStoreDateTimeLocal(instant))).toEqual(instant)
+  })
+
+  it('rejects malformed and impossible dates', () => {
+    for (const value of [
+      '2026-02-30T10:00',
+      '2026-13-01T10:00',
+      '2026-01-01T24:00',
+      '2026-01-01T10:60',
+      '2026-01-01 10:00',
+      '2026-01-01T10:00:00',
+      '',
+    ]) {
+      expect(() => parseStoreDateTimeLocal(value), value).toThrow(RangeError)
+    }
   })
 })

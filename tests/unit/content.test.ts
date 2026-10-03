@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { safeBannerHref } from '@/services/content/banner.service'
-import { renderPageTokens } from '@/services/content/page.service'
+import { renderPageTokens } from '@/lib/content/page-tokens'
 import { inlineText, parseInline, parseMarkdown, safeHref } from '@/utils/markdown'
 
 describe('parseMarkdown', () => {

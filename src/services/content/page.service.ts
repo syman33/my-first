@@ -3,27 +3,11 @@ import { cache } from 'react'
 import { prisma } from '@/db/client'
 import type { Locale } from '@/i18n/config'
 import { formatMoney } from '@/i18n/format'
+import { type PageToken, renderPageTokens } from '@/lib/content/page-tokens'
 import { getSettings } from '@/services/settings/settings.service'
 
-/** Policy pages reference live settings with {{tokens}} so text never contradicts configuration. */
-export const PAGE_TOKENS = [
-  'standardFee',
-  'expressFee',
-  'freeShippingThreshold',
-  'codFee',
-  'returnWindowDays',
-  'standardDays',
-  'expressDays',
-] as const
-export type PageToken = (typeof PAGE_TOKENS)[number]
-
-export function renderPageTokens(content: string, values: Record<PageToken, string>): string {
-  return content.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key: string) =>
-    (PAGE_TOKENS as readonly string[]).includes(key) ? values[key as PageToken] : match,
-  )
-}
-
-async function tokenValues(locale: Locale): Promise<Record<PageToken, string>> {
+/** Current values for the page {{tokens}}, formatted for one locale. */
+export async function getPageTokenValues(locale: Locale): Promise<Record<PageToken, string>> {
   const [shipping, cod, returns] = await Promise.all([
     getSettings('shipping'),
     getSettings('cod'),
@@ -60,7 +44,10 @@ export const getPublishedPage = cache(
     return {
       slug: page.slug,
       title: ar ? page.titleAr : page.titleEn,
-      content: renderPageTokens(ar ? page.contentAr : page.contentEn, await tokenValues(locale)),
+      content: renderPageTokens(
+        ar ? page.contentAr : page.contentEn,
+        await getPageTokenValues(locale),
+      ),
       seoTitle: ar ? page.seoTitleAr : page.seoTitleEn,
       seoDescription: ar ? page.seoDescriptionAr : page.seoDescriptionEn,
       updatedAt: page.updatedAt,
@@ -75,7 +62,7 @@ export async function getPublishedFaq(locale: Locale) {
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       select: { id: true, questionAr: true, questionEn: true, answerAr: true, answerEn: true },
     }),
-    tokenValues(locale),
+    getPageTokenValues(locale),
   ])
   return rows.map((row) => ({
     id: row.id,
