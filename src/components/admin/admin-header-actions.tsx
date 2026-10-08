@@ -1,6 +1,6 @@
 'use client'
 
-import { Languages, LogOut, Store } from 'lucide-react'
+import { KeyRound, Languages, LogOut, Store } from 'lucide-react'
 import Link from 'next/link'
 import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
@@ -9,7 +9,7 @@ import { useSessionNavigation } from '@/hooks/use-session-navigation'
 import type { Locale } from '@/i18n/config'
 import { apiRequest } from '@/lib/client/api'
 
-/** Language switch, store link and sign-out for the admin header. */
+/** Language switch, store link, own password and sign-out for the admin header. */
 export function AdminHeaderActions({
   locale,
   labels,
@@ -19,6 +19,7 @@ export function AdminHeaderActions({
     switchLanguage: string
     switchLanguageLabel: string
     viewStore: string
+    password: string
     signOut: string
     signOutError: string
     genericError: string
@@ -70,7 +71,11 @@ export function AdminHeaderActions({
       </button>
       <Link href={`/${locale}` as Route} className={action} target="_blank" rel="noopener">
         <Store className="size-4" strokeWidth={1.5} aria-hidden="true" />
-        <span className="hidden sm:inline">{labels.viewStore}</span>
+        <span className="sr-only sm:not-sr-only">{labels.viewStore}</span>
+      </Link>
+      <Link href={`/${locale}/account/security` as Route} className={action}>
+        <KeyRound className="size-4" strokeWidth={1.5} aria-hidden="true" />
+        <span className="sr-only sm:not-sr-only">{labels.password}</span>
       </Link>
       <button
         type="button"
@@ -80,7 +85,7 @@ export function AdminHeaderActions({
         aria-busy={signingOut || undefined}
       >
         <LogOut className="size-4 rtl:-scale-x-100" strokeWidth={1.5} aria-hidden="true" />
-        <span className="hidden sm:inline">{labels.signOut}</span>
+        <span className="sr-only sm:not-sr-only">{labels.signOut}</span>
       </button>
       {error ? (
         <p role="alert" className="text-xs text-danger">

@@ -66,6 +66,7 @@ const ar = {
   },
   header: {
     viewStore: 'عرض المتجر',
+    password: 'كلمة المرور',
     signOut: 'تسجيل الخروج',
     signOutError: 'تعذّر تسجيل الخروج. حاول مجدداً.',
     switchLanguage: 'English',
@@ -1285,6 +1286,7 @@ const en: typeof ar = {
   },
   header: {
     viewStore: 'View store',
+    password: 'Password',
     signOut: 'Sign out',
     signOutError: 'Could not sign out. Please try again.',
     switchLanguage: 'العربية',

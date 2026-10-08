@@ -80,6 +80,7 @@ export function AdminShell({
               switchLanguage: t.header.switchLanguage,
               switchLanguageLabel: t.header.switchLanguageLabel,
               viewStore: t.header.viewStore,
+              password: t.header.password,
               signOut: t.header.signOut,
               signOutError: t.header.signOutError,
               genericError: dict.errors.generic,
