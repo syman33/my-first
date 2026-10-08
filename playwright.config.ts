@@ -51,8 +51,18 @@ export default defineConfig({
     timezoneId: 'Asia/Riyadh',
   },
   projects: [
+    // Signs the test accounts in once; the browser projects reuse those sessions.
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(chromiumExecutable ? { launchOptions: { executablePath: chromiumExecutable } } : {}),
+      },
+    },
     {
       name: 'chromium',
+      dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],
         ...(chromiumExecutable ? { launchOptions: { executablePath: chromiumExecutable } } : {}),
@@ -60,6 +70,7 @@ export default defineConfig({
     },
     {
       name: 'mobile-chromium',
+      dependencies: ['setup'],
       testMatch: /.*\.(mobile|smoke)\.spec\.ts/,
       use: {
         ...devices['Pixel 7'],
@@ -70,11 +81,13 @@ export default defineConfig({
       ? [
           {
             name: 'firefox',
+            dependencies: ['setup'],
             testMatch: /.*\.(smoke|cross)\.spec\.ts/,
             use: { ...devices['Desktop Firefox'] },
           },
           {
             name: 'webkit',
+            dependencies: ['setup'],
             testMatch: /.*\.(smoke|cross)\.spec\.ts/,
             use: { ...devices['Desktop Safari'] },
           },

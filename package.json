@@ -72,6 +72,7 @@
     "eslint-plugin-jsx-a11y": "6.10.2",
     "harfbuzzjs": "1.6.2",
     "opentype.js": "2.0.0",
+    "playwright-core": "1.56.1",
     "prettier": "3.9.9",
     "prettier-plugin-tailwindcss": "0.8.1",
     "prisma": "7.10.0",
