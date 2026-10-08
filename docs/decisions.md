@@ -252,3 +252,16 @@ than failing on a customer's checkout.
   and `hreflang` alternates, and all copy comes from typed dictionaries (a missing
   translation is a compile error). Latin digits and the Gregorian calendar are pinned so
   server and browser render identically.
+
+## 14. Queries inside a transaction
+
+A transaction holds one database connection, which runs one query at a time. Independent
+reads therefore go through `readAll` (`src/db/client.ts`): in parallel on the pool, one
+after another inside a transaction. Firing them concurrently on a transaction connection
+gains nothing (the driver only queues them) and the `pg` driver has deprecated it.
+
+Prisma 7.10's own query planner still issues concurrent queries for some nested relation
+reads inside a transaction, which shows up as one `pg` deprecation warning per process.
+The driver queues these correctly; `@prisma/adapter-pg` pins `pg` to `^8`, so the removal
+in `pg@9` cannot arrive without a deliberate Prisma upgrade — check this warning is gone
+before taking one.

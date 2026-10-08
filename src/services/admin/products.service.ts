@@ -1,5 +1,5 @@
 import 'server-only'
-import { prisma, type DbClient } from '@/db/client'
+import { type DbClient, prisma, readAll } from '@/db/client'
 import { isUniqueViolation } from '@/db/errors'
 import { Prisma } from '@/generated/prisma/client'
 import type { ProductStatus } from '@/generated/prisma/enums'
@@ -310,9 +310,9 @@ export async function refreshDerived(tx: DbClient, productId: string): Promise<v
 
 /** A product can be published only when a shopper could actually buy it. */
 async function assertPublishable(tx: DbClient, productId: string): Promise<void> {
-  const [images, activeVariants] = await Promise.all([
-    tx.productImage.count({ where: { productId } }),
-    tx.productVariant.count({ where: { productId, isActive: true } }),
+  const [images, activeVariants] = await readAll(tx, [
+    () => tx.productImage.count({ where: { productId } }),
+    () => tx.productVariant.count({ where: { productId, isActive: true } }),
   ])
   if (images === 0)
     throw new ValidationError({ status: 'publishNeedsImage' }, 'Add an image before publishing')

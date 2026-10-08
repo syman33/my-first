@@ -1,5 +1,5 @@
 import 'server-only'
-import { prisma, type DbClient } from '@/db/client'
+import { type DbClient, prisma, readAll } from '@/db/client'
 import { isUniqueViolation } from '@/db/errors'
 import type { Prisma } from '@/generated/prisma/client'
 import type { ReviewStatus } from '@/generated/prisma/enums'
@@ -35,13 +35,14 @@ export async function reviewEligibility(
   db: DbClient = prisma,
 ): Promise<ReviewEligibility> {
   if (!userId) return { canReview: false, reason: 'SIGN_IN' }
-  const [existing, line, settings] = await Promise.all([
-    db.review.findUnique({
-      where: { productId_userId: { productId, userId } },
-      select: { id: true },
-    }),
-    purchasedLine(db, userId, productId),
-    getSettings('reviews', db),
+  const [existing, line, settings] = await readAll(db, [
+    () =>
+      db.review.findUnique({
+        where: { productId_userId: { productId, userId } },
+        select: { id: true },
+      }),
+    () => purchasedLine(db, userId, productId),
+    () => getSettings('reviews', db),
   ])
   if (existing) return { canReview: false, reason: 'ALREADY_REVIEWED' }
   if (!line && settings.requireVerifiedPurchase)

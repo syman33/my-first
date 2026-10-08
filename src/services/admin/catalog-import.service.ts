@@ -1,5 +1,5 @@
 import 'server-only'
-import { prisma, type DbClient } from '@/db/client'
+import { type DbClient, prisma, readAll } from '@/db/client'
 import { isUniqueViolation } from '@/db/errors'
 import type { Inventory, Product, ProductVariant } from '@/generated/prisma/client'
 import {
@@ -174,23 +174,26 @@ async function planImport(
   const barcodes = groups.flatMap((group) =>
     group.variants.flatMap((variant) => (variant.variant.barcode ? [variant.variant.barcode] : [])),
   )
-  const [categories, brands, products, variantOwners, barcodeOwners] = await Promise.all([
-    db.category.findMany({ select: { id: true, slug: true, kind: true } }),
-    db.brand.findMany({ select: { id: true, slug: true } }),
-    db.product.findMany({
-      where: { sku: { in: productSkus } },
-      include: { variants: { include: { inventory: true } } },
-    }),
-    db.productVariant.findMany({
-      where: { sku: { in: variantSkus } },
-      select: { sku: true, productId: true },
-    }),
-    barcodes.length
-      ? db.productVariant.findMany({
-          where: { barcode: { in: barcodes } },
-          select: { sku: true, barcode: true },
-        })
-      : Promise.resolve([]),
+  const [categories, brands, products, variantOwners, barcodeOwners] = await readAll(db, [
+    () => db.category.findMany({ select: { id: true, slug: true, kind: true } }),
+    () => db.brand.findMany({ select: { id: true, slug: true } }),
+    () =>
+      db.product.findMany({
+        where: { sku: { in: productSkus } },
+        include: { variants: { include: { inventory: true } } },
+      }),
+    () =>
+      db.productVariant.findMany({
+        where: { sku: { in: variantSkus } },
+        select: { sku: true, productId: true },
+      }),
+    () =>
+      barcodes.length
+        ? db.productVariant.findMany({
+            where: { barcode: { in: barcodes } },
+            select: { sku: true, barcode: true },
+          })
+        : Promise.resolve([]),
   ])
   const categoryBySlug = new Map(categories.map((category) => [category.slug, category]))
   const brandBySlug = new Map(brands.map((brand) => [brand.slug, brand.id]))

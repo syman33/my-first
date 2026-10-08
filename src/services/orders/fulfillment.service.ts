@@ -1,5 +1,5 @@
 import 'server-only'
-import { prisma, type DbClient } from '@/db/client'
+import { type DbClient, prisma, readAll } from '@/db/client'
 import { isUniqueViolation } from '@/db/errors'
 import { AppError, InvalidOrderTransitionError } from '@/lib/errors'
 import { canTransition } from '@/lib/orders/state-machine'
@@ -83,12 +83,13 @@ export async function shipOrder(
     if (!canTransition(order.status, 'SHIPPED'))
       throw new InvalidOrderTransitionError(order.status, 'SHIPPED')
 
-    const [existing, shipmentCount] = await Promise.all([
-      tx.shipment.findFirst({
-        where: { orderId, status: { not: 'CANCELLED' } },
-        select: { id: true },
-      }),
-      tx.shipment.count({ where: { orderId } }),
+    const [existing, shipmentCount] = await readAll(tx, [
+      () =>
+        tx.shipment.findFirst({
+          where: { orderId, status: { not: 'CANCELLED' } },
+          select: { id: true },
+        }),
+      () => tx.shipment.count({ where: { orderId } }),
     ])
     const created = await provider.createShipment({
       orderNumber: order.orderNumber,

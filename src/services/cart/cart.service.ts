@@ -1,5 +1,5 @@
 import 'server-only'
-import { prisma, type DbClient } from '@/db/client'
+import { type DbClient, prisma, readAll } from '@/db/client'
 import { isUniqueViolation } from '@/db/errors'
 import type { Prisma } from '@/generated/prisma/client'
 import type { Locale } from '@/i18n/config'
@@ -120,22 +120,23 @@ export async function priceCart(
   options: CartOptions = {},
 ): Promise<CartPricing> {
   const now = options.now ?? new Date()
-  const [cart, shipping, tax, cod, checkout, categories] = await Promise.all([
-    owner
-      ? db.cart.findUnique({
-          where: ownerWhere(owner),
-          select: {
-            id: true,
-            couponCode: true,
-            items: { orderBy: { createdAt: 'asc' }, select: lineSelect },
-          },
-        })
-      : null,
-    getSettings('shipping', db),
-    getSettings('tax', db),
-    getSettings('cod', db),
-    getSettings('checkout', db),
-    getActiveCategories(),
+  const [cart, shipping, tax, cod, checkout, categories] = await readAll(db, [
+    async () =>
+      owner
+        ? db.cart.findUnique({
+            where: ownerWhere(owner),
+            select: {
+              id: true,
+              couponCode: true,
+              items: { orderBy: { createdAt: 'asc' }, select: lineSelect },
+            },
+          })
+        : null,
+    () => getSettings('shipping', db),
+    () => getSettings('tax', db),
+    () => getSettings('cod', db),
+    () => getSettings('checkout', db),
+    () => getActiveCategories(),
   ])
   const ar = locale === 'ar'
   const rows = cart?.items ?? []

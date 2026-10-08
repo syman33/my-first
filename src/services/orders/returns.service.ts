@@ -1,5 +1,5 @@
 import 'server-only'
-import { prisma, type DbClient } from '@/db/client'
+import { type DbClient, prisma, readAll } from '@/db/client'
 import { transactionWithRetry } from '@/db/transaction'
 import { AppError, NotFoundError, OrderNotFoundError, ValidationError } from '@/lib/errors'
 import {
@@ -107,13 +107,14 @@ export async function returnableLines(
   ) {
     return { deadline: null, lines: [] }
   }
-  const [items, claimed] = await Promise.all([
-    tx.orderItem.findMany({
-      where: { orderId: order.id },
-      select: { id: true, quantity: true, returnedQuantity: true },
-      orderBy: { createdAt: 'asc' },
-    }),
-    awaitingReceipt(tx, order.id),
+  const [items, claimed] = await readAll(tx, [
+    () =>
+      tx.orderItem.findMany({
+        where: { orderId: order.id },
+        select: { id: true, quantity: true, returnedQuantity: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+    () => awaitingReceipt(tx, order.id),
   ])
   return {
     deadline,

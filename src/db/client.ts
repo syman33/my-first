@@ -35,3 +35,22 @@ if (process.env.NODE_ENV !== 'production') {
 
 /** Either the root client or an interactive-transaction client. Repositories accept both. */
 export type DbClient = PrismaClient | Prisma.TransactionClient
+
+type ReadResults<T extends readonly (() => Promise<unknown>)[]> = {
+  -readonly [K in keyof T]: T[K] extends () => Promise<infer R> ? R : never
+}
+
+/**
+ * Run independent reads. On the pool they run in parallel; a transaction has a
+ * single connection, where concurrent queries would only queue (and the pg
+ * driver is removing support for them), so they run one after another.
+ */
+export async function readAll<const T extends readonly (() => Promise<unknown>)[]>(
+  db: DbClient,
+  reads: T,
+): Promise<ReadResults<T>> {
+  if (db === prisma) return (await Promise.all(reads.map((read) => read()))) as ReadResults<T>
+  const results: unknown[] = []
+  for (const read of reads) results.push(await read())
+  return results as ReadResults<T>
+}
