@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { apiHandler } from '@/lib/api/handler'
 import { ok } from '@/lib/api/responses'
 import { listCustomerOrders } from '@/services/orders/order-query.service'

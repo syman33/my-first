@@ -35,7 +35,8 @@
     "admin:create": "tsx --conditions=react-server scripts/admin/create-admin.ts",
     "postinstall": "prisma generate",
     "e2e:prepare": "tsx scripts/e2e/prepare-db.ts",
-    "assets:images": "tsx scripts/assets/generate-images.ts"
+    "assets:images": "tsx scripts/assets/generate-images.ts",
+    "perf:benchmark": "tsx --conditions=react-server scripts/perf/benchmark.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",

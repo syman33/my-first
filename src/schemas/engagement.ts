@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { emailField, localeField, nameField, optionalSaudiMobileField, tokenField } from './common'
 
 export const newsletterSubscribeSchema = z.object({

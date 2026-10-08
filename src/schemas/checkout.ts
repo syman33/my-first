@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { addressSchema } from './address'
 import { uuidField } from './common'
 import { PAYMENT_METHODS } from './settings'

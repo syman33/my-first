@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 
 export const customerStatusSchema = z.object({
   status: z.enum(['ACTIVE', 'SUSPENDED']),

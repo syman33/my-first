@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { LOCALE_COOKIE } from '@/i18n/config'
 import { apiHandler } from '@/lib/api/handler'
 import { ok } from '@/lib/api/responses'

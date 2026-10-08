@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { ITEM_CONDITIONS, RETURN_REASONS } from '@/lib/orders/returns'
 import { uuidField } from './common'
 

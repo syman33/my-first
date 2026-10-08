@@ -11,7 +11,7 @@ import type { Locale } from '@/i18n/config'
 import { apiRequest } from '@/lib/client/api'
 import { applyServerErrors, localizeResolver } from '@/lib/client/forms'
 import { forgotPasswordSchema } from '@/schemas/auth'
-import type { z } from 'zod'
+import type * as z from 'zod'
 
 type ForgotPasswordValues = z.input<typeof forgotPasswordSchema>
 

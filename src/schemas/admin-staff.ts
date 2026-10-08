@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { Permission } from '@/generated/prisma/enums'
 import { emailField, nameField } from '@/schemas/common'
 

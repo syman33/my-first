@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { requireAlso } from '@/lib/api/admin'
 import { apiHandler } from '@/lib/api/handler'
 import { RATE_LIMITS } from '@/lib/rate-limit'

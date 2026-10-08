@@ -92,6 +92,43 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+  performance:
+    name: Query performance at scale
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: velora
+          POSTGRES_PASSWORD: velora_ci_password
+          POSTGRES_DB: velora_perf_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U velora -d velora_perf_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      # Builds 10k products / 50k customers / 200k orders and times the hot queries.
+      DATABASE_URL: postgresql://velora:velora_ci_password@localhost:5432/velora_perf_test
+      APP_ENV: test
+      NODE_ENV: test
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      AUTH_SECRET: ci-perf-auth-secret-that-is-long-enough-0123456789
+      PAYMENT_PROVIDER: mock
+      MOCK_PAYMENT_WEBHOOK_SECRET: ci-perf-mock-webhook-secret-0123456789
+      VELORA_SILENT_LOGS: 'true'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run perf:benchmark
+
   e2e:
     name: End-to-end tests (Playwright)
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository

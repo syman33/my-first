@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { uuidField } from './common'
 
 /** Back-office order actions. Amounts are integer halalas (forms convert SAR input). */

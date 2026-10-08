@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { uuidField } from './common'
 
 const quantity = z.coerce.number({ error: 'quantity' }).int({ error: 'quantity' })

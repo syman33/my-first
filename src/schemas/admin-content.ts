@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { parseStoreDateTimeLocal } from '@/utils/time'
 
 /** Coupons, banners, CMS pages and FAQ entries (admin input). Money is halalas; percentages are basis points. */

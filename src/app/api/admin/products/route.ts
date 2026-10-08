@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { adminWriteLimit } from '@/lib/api/admin'
 import { apiHandler } from '@/lib/api/handler'
 import { created } from '@/lib/api/responses'

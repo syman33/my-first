@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod'
 import { CategoryKind, ColorFamily, Gender } from '@/generated/prisma/enums'
 import { RESERVED_CATEGORY_SLUGS } from '@/lib/catalog/reserved-slugs'
 import { isValidSlug } from '@/utils/text'

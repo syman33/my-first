@@ -1,6 +1,6 @@
 import 'server-only'
 import { after, type NextRequest, type NextResponse } from 'next/server'
-import type { z } from 'zod'
+import type * as z from 'zod'
 import type { Permission } from '@/generated/prisma/enums'
 import type { Locale } from '@/i18n/config'
 import { cookieNames } from '@/lib/auth/cookies'

@@ -9,7 +9,6 @@ import { Price } from '@/components/catalog/price'
 import { Alert } from '@/components/ui/alert'
 import { Button, ButtonLink } from '@/components/ui/button'
 import type { Dictionary } from '@/i18n'
-import { interpolate } from '@/i18n'
 import type { Locale } from '@/i18n/config'
 import { apiRequest, ApiClientError } from '@/lib/client/api'
 import type { WishlistEntryView } from '@/types/wishlist'
@@ -134,14 +133,15 @@ export function WishlistView({
                 type="button"
                 className="text-xs text-muted underline-offset-4 hover:text-ink hover:underline"
                 disabled={busy === productId}
-                aria-label={interpolate(t.remove, { name: card.name })}
                 onClick={() =>
                   void act(productId, () =>
                     apiRequest(`/api/wishlist/items/${productId}`, { method: 'DELETE', locale }),
                   )
                 }
               >
+                {/* The accessible name starts with the visible word (WCAG 2.5.3, voice control). */}
                 {removeLabel}
+                <span className="sr-only"> {card.name}</span>
               </button>
             </div>
           </li>

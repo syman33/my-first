@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import type { z } from 'zod'
+import type * as z from 'zod'
 import type { Dictionary } from '@/i18n'
 import type { Locale } from '@/i18n/config'
 import { apiRequest, ApiClientError } from '@/lib/client/api'
