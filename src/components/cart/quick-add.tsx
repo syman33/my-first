@@ -2,9 +2,12 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import { useAnalytics } from '@/components/analytics/analytics-provider'
 import { interpolate } from '@/i18n'
 import type { Locale } from '@/i18n/config'
 import { apiRequest, ApiClientError } from '@/lib/client/api'
+import { addedItem } from '@/lib/analytics/cart'
+import type { CartView } from '@/types/cart'
 
 interface QuickAddProps {
   locale: Locale
@@ -19,11 +22,17 @@ export function QuickAdd({ locale, variantId, productName, labels }: QuickAddPro
   const [state, setState] = useState<'idle' | 'adding' | 'added' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
+  const track = useAnalytics()
 
   async function add() {
     setState('adding')
     try {
-      await apiRequest('/api/cart/items', { body: { variantId, quantity: 1 }, locale })
+      const { cart } = await apiRequest<{ cart: CartView }>('/api/cart/items', {
+        body: { variantId, quantity: 1 },
+        locale,
+      })
+      const item = addedItem(cart, variantId, 1)
+      if (item) track({ name: 'add_to_cart', item })
       setState('added')
       startTransition(() => router.refresh())
     } catch (caught) {

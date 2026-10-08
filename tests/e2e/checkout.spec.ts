@@ -1,6 +1,14 @@
 import { expect, type Page, test } from '@playwright/test'
 import { interpolate } from '../../src/i18n'
-import { addLunaToBag, authFile, definition, emptyBag, products, t } from './support'
+import {
+  addLunaToBag,
+  analyticsEvents,
+  authFile,
+  definition,
+  emptyBag,
+  products,
+  t,
+} from './support'
 
 /**
  * Required flows 11–14: checkout, a successful and a failed mock payment, and
@@ -44,6 +52,18 @@ test('checkout and a successful payment confirm the order', async ({ page }) => 
     page.getByText(interpolate(t.orders.confirmation.received, { number: orderNumber })),
   ).toBeVisible()
   await expect(page.getByTestId('confirmation-next')).toHaveText(t.orders.confirmation.paidNext)
+
+  // One purchase event for the order, not repeated when the confirmation is reloaded.
+  await expect
+    .poll(async () => (await analyticsEvents(page)).map((event) => event.name))
+    .toContain('purchase_completed')
+  const purchase = (await analyticsEvents(page)).find((e) => e.name === 'purchase_completed')
+  expect(purchase).toMatchObject({ orderNumber })
+  await page.reload()
+  await expect(page.getByTestId('confirmation-next')).toBeVisible()
+  expect((await analyticsEvents(page)).map((event) => event.name)).not.toContain(
+    'purchase_completed',
+  )
 
   // The bag was converted into the order.
   await page.goto('/ar/cart')

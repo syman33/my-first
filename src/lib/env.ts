@@ -64,6 +64,8 @@ const EnvSchema = z
 
     RATE_LIMIT_PROVIDER: z.enum(['postgres', 'memory']).default('postgres'),
     ANALYTICS_PROVIDER: z.enum(['none', 'console', 'ga4']).default('none'),
+    /** GA4 measurement id (public by nature: it is visible in every page). */
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: optionalString,
 
     ALLOW_MOCK_PROVIDERS_IN_PRODUCTION: booleanString,
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).optional(),
@@ -88,6 +90,15 @@ const EnvSchema = z
     if (env.EMAIL_PROVIDER === 'resend') {
       if (!env.RESEND_API_KEY) issue('RESEND_API_KEY', 'required when EMAIL_PROVIDER=resend')
       if (!env.EMAIL_FROM) issue('EMAIL_FROM', 'required when EMAIL_PROVIDER=resend')
+    }
+    if (
+      env.ANALYTICS_PROVIDER === 'ga4' &&
+      !/^G-[A-Z0-9]{4,20}$/.test(env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? '')
+    ) {
+      issue(
+        'NEXT_PUBLIC_GA_MEASUREMENT_ID',
+        'a GA4 measurement id (G-XXXXXXX) is required when ANALYTICS_PROVIDER=ga4',
+      )
     }
     if (env.STORAGE_PROVIDER === 's3') {
       for (const key of [

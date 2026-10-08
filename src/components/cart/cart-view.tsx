@@ -6,12 +6,14 @@ import type { Route } from 'next'
 import { Minus, Plus, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { type FormEvent, useState, useTransition } from 'react'
+import { useAnalytics } from '@/components/analytics/analytics-provider'
 import { Alert } from '@/components/ui/alert'
 import { Button, ButtonLink, buttonClasses } from '@/components/ui/button'
 import type { Dictionary } from '@/i18n'
 import { interpolate, plural } from '@/i18n'
 import type { Locale } from '@/i18n/config'
 import { formatMoney } from '@/i18n/format'
+import { cartLineItem } from '@/lib/analytics/cart'
 import { apiRequest, ApiClientError } from '@/lib/client/api'
 import type { CartLineView, CartView as CartViewData } from '@/types/cart'
 import { cn } from '@/utils/cn'
@@ -32,6 +34,7 @@ export function CartView({ locale, initialCart, t, couponReasons, genericError }
   const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
   const [couponInput, setCouponInput] = useState('')
   const [, startTransition] = useTransition()
+  const track = useAnalytics()
 
   const money = (amount: number) => formatMoney(amount, locale)
 
@@ -67,12 +70,14 @@ export function CartView({ locale, initialCart, t, couponReasons, genericError }
       }),
     )
   const remove = (line: CartLineView) =>
-    mutate(`remove-${line.id}`, () =>
-      apiRequest<{ cart: CartViewData }>(`/api/cart/items/${line.id}`, {
+    mutate(`remove-${line.id}`, async () => {
+      const result = await apiRequest<{ cart: CartViewData }>(`/api/cart/items/${line.id}`, {
         method: 'DELETE',
         locale,
-      }),
-    )
+      })
+      track({ name: 'remove_from_cart', item: cartLineItem(line) })
+      return result
+    })
   const moveToWishlist = (line: CartLineView) =>
     mutate(`move-${line.id}`, () =>
       apiRequest<{ cart: CartViewData }>(`/api/cart/items/${line.id}/move-to-wishlist`, {

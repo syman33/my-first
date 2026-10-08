@@ -102,6 +102,7 @@ export function ProductCard({ locale, product, t, actions, priority = false }: P
               locale={locale}
               productId={product.id}
               productName={product.name}
+              price={product.price}
               initialActive={actions.wishlistIds.has(product.id)}
               labels={{
                 add: actions.t.wishlist.add,

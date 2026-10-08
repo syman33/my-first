@@ -13,25 +13,30 @@ interface OrderSummaryProps {
   children?: ReactNode
 }
 
+/** One term/value pair; a <div> is the only wrapper a <dl> may hold around them. */
 function Row({
   label,
   value,
   strong = false,
+  note,
 }: {
   label: ReactNode
   value: ReactNode
   strong?: boolean
+  /** A second description of the same term (e.g. the VAT included in the total). */
+  note?: ReactNode
 }) {
   return (
     <div
       className={
         strong
-          ? 'flex items-baseline justify-between gap-4 text-base font-medium text-ink'
+          ? 'flex flex-wrap items-baseline justify-between gap-x-4 border-t border-line pt-4 text-base font-medium text-ink'
           : 'flex items-baseline justify-between gap-4'
       }
     >
       <dt>{label}</dt>
       <dd className="ltr-nums">{value}</dd>
+      {note ? <dd className="mt-1 w-full text-xs font-normal text-muted">{note}</dd> : null}
     </div>
   )
 }
@@ -65,15 +70,19 @@ export function OrderSummary({ locale, t, totals, shippingLabel, children }: Ord
         {totals.taxTotal > 0 && !totals.pricesIncludeTax ? (
           <Row label={interpolate(t.vat, { rate })} value={money(totals.taxTotal)} />
         ) : null}
-        <div className="border-t border-line pt-4">
-          <Row strong label={t.total} value={money(totals.total)} />
-          {totals.taxTotal > 0 && totals.pricesIncludeTax ? (
-            <p className="mt-1 text-xs text-muted">
-              {interpolate(t.vatIncluded, { rate })}:{' '}
-              <span className="ltr-nums">{money(totals.taxTotal)}</span>
-            </p>
-          ) : null}
-        </div>
+        <Row
+          strong
+          label={t.total}
+          value={money(totals.total)}
+          note={
+            totals.taxTotal > 0 && totals.pricesIncludeTax ? (
+              <>
+                {interpolate(t.vatIncluded, { rate })}:{' '}
+                <span className="ltr-nums">{money(totals.taxTotal)}</span>
+              </>
+            ) : null
+          }
+        />
       </dl>
       {totals.amountToFreeShipping !== null && totals.amountToFreeShipping > 0 ? (
         <p className="mt-5 bg-sand px-3 py-2 text-xs text-text">

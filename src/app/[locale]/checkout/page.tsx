@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { VerificationBanner } from '@/components/account/verification-banner'
+import { TrackEvent } from '@/components/analytics/analytics-provider'
 import { CheckoutForm } from '@/components/checkout/checkout-form'
 import { ButtonLink } from '@/components/ui/button'
 import { getDictionary } from '@/i18n'
 import { isLocale } from '@/i18n/config'
+import { cartLineItem } from '@/lib/analytics/cart'
 import { requireUserPage } from '@/lib/auth/current-user'
 import { env } from '@/lib/env'
 import { listAddresses } from '@/services/account/address.service'
@@ -74,6 +76,13 @@ export default async function CheckoutPage({ params }: PageProps<'/[locale]/chec
 
   return (
     <div className="container-luxe py-10 lg:py-14">
+      <TrackEvent
+        event={{
+          name: 'checkout_started',
+          value: cart.totals.total,
+          items: cart.lines.map((line) => cartLineItem(line)),
+        }}
+      />
       {header}
       {checkoutSettings.requireEmailVerification && !user.emailVerified ? (
         <div className="mt-6" data-testid="checkout-verify-email">

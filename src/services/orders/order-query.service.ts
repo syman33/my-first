@@ -197,7 +197,24 @@ export async function getOrderConfirmation(userId: string, orderNumber: string) 
       paymentStatus: true,
       paymentMethod: true,
       total: true,
+      taxTotal: true,
+      shippingTotal: true,
+      couponCode: true,
       shippingEmail: true,
+      // Product-level lines for the purchase analytics event (no customer data).
+      items: {
+        orderBy: { createdAt: 'asc' },
+        select: {
+          productId: true,
+          sku: true,
+          productNameAr: true,
+          productNameEn: true,
+          variantNameAr: true,
+          variantNameEn: true,
+          unitPrice: true,
+          quantity: true,
+        },
+      },
     },
   })
 }

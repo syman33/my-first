@@ -2,6 +2,8 @@ import '@/styles/globals.css'
 import type { Metadata, Viewport } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
+import { AnalyticsProvider } from '@/components/analytics/analytics-provider'
+import { Ga4Script } from '@/components/analytics/ga4-script'
 import { SiteFooter } from '@/components/store/site-footer'
 import { SiteHeader } from '@/components/store/site-header'
 import { htmlLang, isLocale, localeDirection, otherLocale, pickLocalized } from '@/i18n/config'
@@ -61,59 +63,68 @@ export default async function LocaleRootLayout({ children, params }: LayoutProps
         })
       : null
   const currentPath = requestHeaders.get('x-pathname') ?? `/${locale}`
-  const simulatedPayments = env().PAYMENT_PROVIDER === 'mock'
+  const config = env()
+  const simulatedPayments = config.PAYMENT_PROVIDER === 'mock'
 
   return (
     <html lang={htmlLang[locale]} dir={localeDirection[locale]} className={fontVariables}>
       <body className="flex min-h-dvh flex-col">
-        <a href="#main-content" className="skip-link">
-          {dict.common.skipToContent}
-        </a>
-        {simulatedPayments ? (
-          <p
-            className="bg-warning-soft px-4 py-1.5 text-center text-xs text-warning print:hidden"
-            data-testid="test-mode-banner"
-          >
-            {dict.common.testModeBanner}
-          </p>
+        <AnalyticsProvider provider={config.ANALYTICS_PROVIDER}>
+          <a href="#main-content" className="skip-link">
+            {dict.common.skipToContent}
+          </a>
+          {simulatedPayments ? (
+            <p
+              className="bg-warning-soft px-4 py-1.5 text-center text-xs text-warning print:hidden"
+              data-testid="test-mode-banner"
+            >
+              {dict.common.testModeBanner}
+            </p>
+          ) : null}
+          <SiteHeader
+            locale={locale}
+            dict={{ nav: dict.nav, common: dict.common, auth: dict.auth }}
+            categories={navCategories.map((c) => ({
+              slug: c.slug,
+              name: pickLocalized(c, 'name', locale),
+            }))}
+            user={
+              session
+                ? { name: session.user.name, isStaff: isBackOfficeRole(session.user.role) }
+                : null
+            }
+            counts={counts}
+            announcement={announcement}
+            switchLocaleHref={switchLocalePath(currentPath, otherLocale(locale))}
+          />
+          <main id="main-content" className="flex-1">
+            {children}
+          </main>
+          <SiteFooter
+            locale={locale}
+            dict={{ footer: dict.footer, paymentMethodNames: dict.paymentMethodNames }}
+            categories={footerCategories.map((c) => ({
+              slug: c.slug,
+              name: pickLocalized(c, 'name', locale),
+            }))}
+            store={{
+              email: store.email,
+              phone: store.phone,
+              address: locale === 'ar' ? store.addressAr : store.addressEn,
+              commercialRegistration: store.commercialRegistration,
+              vatNumber: store.vatNumber,
+              social: store.social,
+            }}
+            paymentMethods={payments.enabledMethods}
+            year={storeYear(new Date())}
+          />
+        </AnalyticsProvider>
+        {config.ANALYTICS_PROVIDER === 'ga4' && config.NEXT_PUBLIC_GA_MEASUREMENT_ID ? (
+          <Ga4Script
+            measurementId={config.NEXT_PUBLIC_GA_MEASUREMENT_ID}
+            nonce={requestHeaders.get('x-nonce') ?? undefined}
+          />
         ) : null}
-        <SiteHeader
-          locale={locale}
-          dict={{ nav: dict.nav, common: dict.common, auth: dict.auth }}
-          categories={navCategories.map((c) => ({
-            slug: c.slug,
-            name: pickLocalized(c, 'name', locale),
-          }))}
-          user={
-            session
-              ? { name: session.user.name, isStaff: isBackOfficeRole(session.user.role) }
-              : null
-          }
-          counts={counts}
-          announcement={announcement}
-          switchLocaleHref={switchLocalePath(currentPath, otherLocale(locale))}
-        />
-        <main id="main-content" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter
-          locale={locale}
-          dict={{ footer: dict.footer, paymentMethodNames: dict.paymentMethodNames }}
-          categories={footerCategories.map((c) => ({
-            slug: c.slug,
-            name: pickLocalized(c, 'name', locale),
-          }))}
-          store={{
-            email: store.email,
-            phone: store.phone,
-            address: locale === 'ar' ? store.addressAr : store.addressEn,
-            commercialRegistration: store.commercialRegistration,
-            vatNumber: store.vatNumber,
-            social: store.social,
-          }}
-          paymentMethods={payments.enabledMethods}
-          year={storeYear(new Date())}
-        />
       </body>
     </html>
   )

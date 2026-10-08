@@ -37,9 +37,26 @@ export async function registerNode(): Promise<void> {
   }
 }
 
+/**
+ * The browser went away mid-response (a cancelled prefetch, a navigation, a
+ * closed tab). Nothing failed on the server, so it must not page anyone.
+ */
+export function isClientDisconnect(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  return (
+    error.message === 'The destination stream closed early.' ||
+    error.name === 'AbortError' ||
+    (error as { code?: unknown }).code === 'ECONNRESET'
+  )
+}
+
 export async function reportRequestError(
   ...[error, request, context]: Parameters<Instrumentation.onRequestError>
 ): Promise<void> {
+  if (isClientDisconnect(error)) {
+    logger.debug('request.client_disconnected', { path: request.path, method: request.method })
+    return
+  }
   const digest =
     typeof error === 'object' && error !== null && 'digest' in error
       ? String((error as { digest: unknown }).digest)

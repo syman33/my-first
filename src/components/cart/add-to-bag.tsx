@@ -4,10 +4,13 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import { useAnalytics } from '@/components/analytics/analytics-provider'
 import { Button } from '@/components/ui/button'
 import type { Dictionary } from '@/i18n'
 import type { Locale } from '@/i18n/config'
 import { apiRequest, ApiClientError } from '@/lib/client/api'
+import { addedItem } from '@/lib/analytics/cart'
+import type { CartView } from '@/types/cart'
 
 interface AddToBagProps {
   locale: Locale
@@ -23,13 +26,19 @@ export function AddToBag({ locale, variantId, soldOut, t, genericError }: AddToB
   const [status, setStatus] = useState<'idle' | 'adding' | 'added'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
+  const track = useAnalytics()
 
   async function add() {
     if (!variantId) return
     setStatus('adding')
     setError(null)
     try {
-      await apiRequest('/api/cart/items', { body: { variantId, quantity: 1 }, locale })
+      const { cart } = await apiRequest<{ cart: CartView }>('/api/cart/items', {
+        body: { variantId, quantity: 1 },
+        locale,
+      })
+      const item = addedItem(cart, variantId, 1)
+      if (item) track({ name: 'add_to_cart', item })
       setStatus('added')
       startTransition(() => router.refresh())
     } catch (caught) {

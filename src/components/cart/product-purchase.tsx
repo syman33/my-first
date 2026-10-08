@@ -45,6 +45,7 @@ export function ProductPurchase({
             locale={showcase.locale}
             productId={productId}
             productName={productName}
+            price={variant?.price ?? showcase.variants[0]?.price ?? 0}
             variantId={variant?.id ?? null}
             initialActive={inWishlist}
             variant="outline"

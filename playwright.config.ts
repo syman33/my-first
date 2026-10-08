@@ -27,6 +27,8 @@ export const e2eServerEnv = {
   EMAIL_PROVIDER: 'console',
   STORAGE_PROVIDER: 'local',
   RATE_LIMIT_PROVIDER: 'postgres',
+  // Events stay in the page (window.veloraAnalytics) so specs can check them.
+  ANALYTICS_PROVIDER: 'console',
   ALLOW_MOCK_PROVIDERS_IN_PRODUCTION: 'true',
   NEXT_TELEMETRY_DISABLED: '1',
   LOG_LEVEL: 'warn',

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { interpolate } from '../../src/i18n'
-import { addLunaToBag, authFile, emptyBag, products, t } from './support'
+import { addLunaToBag, analyticsEvents, authFile, emptyBag, products, t } from './support'
 
 /** Required flows 6–10: add to bag, change quantity, remove, wishlist and coupons. */
 
@@ -14,6 +14,16 @@ test.beforeEach(async ({ page }) => {
 test('adds a product to the bag and shows it in the header count and the bag', async ({ page }) => {
   await addLunaToBag(page)
   await expect(page.getByTestId('header-cart')).toContainText('1')
+
+  // Analytics saw the view and the add, priced by the server, with no customer data.
+  const events = await analyticsEvents(page)
+  expect(events.map((event) => event.name)).toEqual(
+    expect.arrayContaining(['product_viewed', 'add_to_cart']),
+  )
+  const added = events.find((event) => event.name === 'add_to_cart')
+  expect(added?.item).toMatchObject({ name: products.luna.nameAr, quantity: 1 })
+  expect((added?.item as { price: number }).price).toBeGreaterThan(0)
+  expect(JSON.stringify(events)).not.toContain('@')
   await page.goto('/ar/cart')
   const line = page.getByTestId('cart-line')
   await expect(line).toHaveCount(1)
@@ -51,7 +61,10 @@ test('removes a product from the bag', async ({ page }) => {
 
 test('saves a product to the wishlist and removes it again', async ({ page }) => {
   await page.goto(products.luna.href)
-  const toggle = page.getByTestId('wishlist-toggle')
+  // The product's own heart (related-product cards below have theirs too).
+  const toggle = page.locator(
+    `[data-testid="wishlist-toggle"][aria-label*="${products.luna.nameAr}"]`,
+  )
   if ((await toggle.getAttribute('aria-pressed')) === 'true') {
     await toggle.click()
     await expect(toggle).toHaveAttribute('aria-pressed', 'false')
@@ -69,7 +82,7 @@ test('saves a product to the wishlist and removes it again', async ({ page }) =>
   await expect(item).toHaveCount(0)
 
   await page.goto(products.luna.href)
-  await expect(page.getByTestId('wishlist-toggle')).toHaveAttribute('aria-pressed', 'false')
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
 })
 
 test('applies a valid coupon, refuses an expired one, and removes it', async ({ page }) => {

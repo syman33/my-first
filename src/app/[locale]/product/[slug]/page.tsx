@@ -8,6 +8,7 @@ import { ReviewForm } from '@/components/catalog/review-form'
 import { type ShowcaseVariant } from '@/components/catalog/product-showcase'
 import { ProductPurchase } from '@/components/cart/product-purchase'
 import { RatingStars } from '@/components/catalog/rating-stars'
+import { TrackEvent } from '@/components/analytics/analytics-provider'
 import { JsonLd } from '@/components/seo/json-ld'
 import { getDictionary, interpolate, plural } from '@/i18n'
 import { isLocale, type Locale } from '@/i18n/config'
@@ -170,6 +171,18 @@ export default async function ProductPage({
   return (
     <div className="container-luxe py-8 lg:py-12">
       <JsonLd data={productJsonLd(locale, product)} />
+      <TrackEvent
+        event={{
+          name: 'product_viewed',
+          item: {
+            id: product.id,
+            name: product.name,
+            price:
+              (variants.find((v) => v.id === product.defaultVariantId) ?? variants[0])?.price ?? 0,
+            quantity: 1,
+          },
+        }}
+      />
       <Breadcrumbs locale={locale} label={t.breadcrumb} items={crumbs} />
 
       <div className="mt-8">

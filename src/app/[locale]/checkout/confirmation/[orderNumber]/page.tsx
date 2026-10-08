@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { CheckCircle2 } from 'lucide-react'
 import { notFound } from 'next/navigation'
+import { TrackEvent } from '@/components/analytics/analytics-provider'
 import { ButtonLink } from '@/components/ui/button'
 import { getDictionary, interpolate } from '@/i18n'
 import { isLocale } from '@/i18n/config'
@@ -39,8 +40,31 @@ export default async function ConfirmationPage({
       : order.paymentMethod === 'COD'
         ? t.codNext
         : t.payNext
+  // A purchase counts once the order is firm: paid online, or placed cash on delivery.
+  const completed = order.paymentStatus === 'PAID' || order.paymentMethod === 'COD'
+  const ar = locale === 'ar'
   return (
     <div className="container-luxe flex min-h-[60vh] flex-col items-center justify-center py-16 text-center">
+      {completed ? (
+        <TrackEvent
+          onceKey={`purchase:${order.orderNumber}`}
+          event={{
+            name: 'purchase_completed',
+            orderNumber: order.orderNumber,
+            value: order.total,
+            tax: order.taxTotal,
+            shipping: order.shippingTotal,
+            coupon: order.couponCode,
+            items: order.items.map((item) => ({
+              id: item.productId ?? item.sku,
+              name: ar ? item.productNameAr : item.productNameEn,
+              variant: (ar ? item.variantNameAr : item.variantNameEn) ?? undefined,
+              price: item.unitPrice,
+              quantity: item.quantity,
+            })),
+          }}
+        />
+      ) : null}
       <CheckCircle2 className="size-12 text-success" strokeWidth={1.25} aria-hidden="true" />
       <h1 className="mt-6 font-display text-4xl text-ink md:text-5xl">{t.title}</h1>
       <p className="mt-4 text-lg text-text">

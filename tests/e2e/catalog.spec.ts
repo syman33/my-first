@@ -27,7 +27,8 @@ test('filters narrow the listing, live in the URL and survive a reload', async (
 
   // A price ceiling below every product empties the listing and offers a way back.
   await page.goto('/ar/shop?max=1')
-  await expect(page.getByTestId('listing-empty')).toBeVisible()
-  await page.getByRole('link', { name: t.store.listing.clearAll }).click()
+  const empty = page.getByTestId('listing-empty')
+  await expect(empty).toBeVisible()
+  await empty.getByRole('link', { name: t.store.listing.clearAll }).click()
   await expect(cards.first()).toBeVisible()
 })

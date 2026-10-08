@@ -3,9 +3,10 @@
 /*
  * VÉLORA design tokens.
  * Brand palette from the identity brief; text colours were adjusted where the
- * brief's value fails WCAG AA (4.5:1) for body text on the ivory background:
- *   muted text  #6B6B6B (4.85:1)  — brief #777777 (4.1:1) kept for decorative use
- *   accent text #7D6342 (5.1:1)   — brief #B89B72 (2.4:1) kept for lines/marks
+ * brief's value fails WCAG AA (4.5:1) for body text on the light surfaces
+ * (ivory, paper, sand, champagne-soft) — enforced by tests/unit/contrast.test.ts:
+ *   muted text  #666666 (≥ 4.7:1)  — brief #777777 (4.1:1) kept for decorative use
+ *   accent text #7D6342 (≥ 4.7:1)  — brief #B89B72 (2.4:1) kept for lines/marks
  */
 @theme {
   --color-ink: #171717;
@@ -15,7 +16,7 @@
   --color-champagne-strong: #7d6342;
   --color-champagne-soft: #efe7da;
   --color-text: #202020;
-  --color-muted: #6b6b6b;
+  --color-muted: #666666;
   --color-muted-decorative: #777777;
   --color-line: #e7e2da;
   --color-line-strong: #d6cfc3;

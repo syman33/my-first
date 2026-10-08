@@ -2,10 +2,12 @@ import type { Metadata } from 'next'
 import Form from 'next/form'
 import { notFound } from 'next/navigation'
 import { Search } from 'lucide-react'
+import { TrackEvent } from '@/components/analytics/analytics-provider'
 import { ListingView } from '@/components/catalog/listing-view'
 import { ProductGrid } from '@/components/catalog/product-grid'
 import { getDictionary, interpolate } from '@/i18n'
 import { isLocale } from '@/i18n/config'
+import { sanitizeSearchTerm } from '@/lib/analytics/events'
 import { parseListingParams } from '@/schemas/catalog'
 import { getListingFacets, listProducts, productRail } from '@/services/catalog/listing.service'
 import { getWishlistProductIds } from '@/services/wishlist/wishlist.service'
@@ -97,17 +99,22 @@ export default async function SearchPage({ params, searchParams }: PageProps<'/[
     getListingFacets(scope, filters.q),
   ])
   return (
-    <ListingView
-      locale={locale}
-      dict={dict}
-      basePath={`/${locale}/search`}
-      defaults={defaults}
-      filters={filters}
-      listing={listing}
-      facets={facets}
-      options={{ showCategories: true, showGenders: true, showSale: true }}
-      actions={actions}
-      header={searchBox}
-    />
+    <>
+      <TrackEvent
+        event={{ name: 'search', query: sanitizeSearchTerm(filters.q), results: listing.total }}
+      />
+      <ListingView
+        locale={locale}
+        dict={dict}
+        basePath={`/${locale}/search`}
+        defaults={defaults}
+        filters={filters}
+        listing={listing}
+        facets={facets}
+        options={{ showCategories: true, showGenders: true, showSale: true }}
+        actions={actions}
+        header={searchBox}
+      />
+    </>
   )
 }

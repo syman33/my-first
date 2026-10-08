@@ -93,3 +93,15 @@ export function parseCount(text: string | null): number {
 export function definition(page: Page, label: string): Locator {
   return page.locator(`xpath=//dt[normalize-space()="${label}"]/following-sibling::dd[1]`)
 }
+
+export interface RecordedEvent {
+  name: string
+  [key: string]: unknown
+}
+
+/** Analytics events recorded on the current page (development provider, nothing is sent). */
+export function analyticsEvents(page: Page): Promise<RecordedEvent[]> {
+  return page.evaluate(
+    () => (window as unknown as { veloraAnalytics?: RecordedEvent[] }).veloraAnalytics ?? [],
+  )
+}

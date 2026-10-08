@@ -3,6 +3,7 @@
 import { Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import { useAnalytics } from '@/components/analytics/analytics-provider'
 import { interpolate } from '@/i18n'
 import type { Locale } from '@/i18n/config'
 import { apiRequest } from '@/lib/client/api'
@@ -12,6 +13,8 @@ interface WishlistButtonProps {
   locale: Locale
   productId: string
   productName: string
+  /** Unit price in halalas (analytics only; the server prices everything else). */
+  price: number
   variantId?: string | null
   initialActive: boolean
   labels: { add: string; remove: string; added: string; removed: string; error: string }
@@ -24,6 +27,7 @@ export function WishlistButton({
   locale,
   productId,
   productName,
+  price,
   variantId,
   initialActive,
   labels,
@@ -34,6 +38,7 @@ export function WishlistButton({
   const [active, setActive] = useState(initialActive)
   const [message, setMessage] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+  const track = useAnalytics()
 
   async function toggle() {
     const next = !active
@@ -44,6 +49,10 @@ export function WishlistButton({
         await apiRequest('/api/wishlist/items', {
           body: { productId, variantId: variantId ?? null },
           locale,
+        })
+        track({
+          name: 'add_to_wishlist',
+          item: { id: productId, name: productName, price, quantity: 1 },
         })
       } else {
         await apiRequest(`/api/wishlist/items/${productId}`, { method: 'DELETE', locale })
