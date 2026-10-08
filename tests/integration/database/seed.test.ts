@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { prisma } from '@/db/client'
 import { seedDemo } from '../../../prisma/seed/demo'
+import { seedDemoOrders } from '../../../prisma/seed/orders'
 import { seedReference } from '../../../prisma/seed/reference'
 
 describe('seed', () => {
@@ -58,5 +59,62 @@ describe('seed', () => {
     expect(admin.role).toBe('ADMIN')
     expect(admin.passwordHash).toMatch(/^\$argon2id\$/)
     expect(admin.passwordHash).not.toContain('ChangeMe123!')
+  })
+
+  it('creates the demo order history through the real services, idempotently', async () => {
+    await seedReference(prisma)
+    await seedDemo(prisma)
+    const now = new Date()
+    expect(await seedDemoOrders(now)).toEqual({ created: 20, skipped: 0 })
+
+    const orders = await prisma.order.findMany({ select: { status: true, createdAt: true } })
+    expect(orders).toHaveLength(20)
+    const byStatus = Object.fromEntries(
+      [
+        'PENDING',
+        'CONFIRMED',
+        'PROCESSING',
+        'SHIPPED',
+        'OUT_FOR_DELIVERY',
+        'DELIVERED',
+        'CANCELLED',
+      ].map((status) => [status, orders.filter((order) => order.status === status).length]),
+    )
+    expect(byStatus).toMatchObject({
+      PENDING: 2,
+      CONFIRMED: 1,
+      PROCESSING: 1,
+      SHIPPED: 2,
+      OUT_FOR_DELIVERY: 1,
+      CANCELLED: 2,
+    })
+    // Spread over the past month, never in the future.
+    for (const order of orders) {
+      expect(order.createdAt.getTime()).toBeLessThanOrEqual(now.getTime() + 60_000)
+      expect(order.createdAt.getTime()).toBeGreaterThan(now.getTime() - 31 * 86_400_000)
+    }
+
+    const reviews = await prisma.review.groupBy({ by: ['status'], _count: true })
+    expect(Object.fromEntries(reviews.map((row) => [row.status, row._count]))).toEqual({
+      APPROVED: 12,
+      PENDING: 2,
+      REJECTED: 1,
+    })
+    expect(await prisma.refund.count({ where: { status: 'SUCCEEDED' } })).toBe(2)
+    expect(await prisma.returnRequest.count({ where: { status: 'COMPLETED' } })).toBe(1)
+
+    // Stock stayed consistent: the ledger still adds up to what is on hand.
+    const variants = await prisma.productVariant.findMany({
+      include: { inventory: true, movements: true },
+    })
+    for (const variant of variants) {
+      const ledgerTotal = variant.movements.reduce((sum, m) => sum + m.quantityDelta, 0)
+      expect(ledgerTotal).toBe(variant.inventory?.onHand)
+    }
+    // Nobody is emailed about the fictional history.
+    expect(await prisma.outboxEvent.count({ where: { status: 'PENDING' } })).toBe(0)
+
+    expect(await seedDemoOrders()).toEqual({ created: 0, skipped: 20 })
+    expect(await prisma.order.count()).toBe(20)
   })
 })

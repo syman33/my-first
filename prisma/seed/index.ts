@@ -4,13 +4,16 @@
  * Profiles (SEED_PROFILE):
  *   reference — roles, settings, categories, CMS pages. Safe for production.
  *   demo      — reference + synthetic catalogue, customers, coupons, banners,
- *               newsletter subscribers and development staff accounts.
+ *               newsletter subscribers, development staff accounts, and an
+ *               order history (20 orders, 15 reviews) made through the real
+ *               checkout, payment, fulfilment, returns and review services.
  *
  * The demo profile (which creates admin@velora.local / ChangeMe123!) is
  * refused when APP_ENV is production or staging.
  */
 import { prisma } from '../../src/db/client'
 import { seedDemo } from './demo'
+import { seedDemoOrders } from './orders'
 import { seedReference } from './reference'
 
 const appEnv =
@@ -32,13 +35,16 @@ async function main(): Promise<void> {
   console.log('[seed] reference data ready')
   if (profile === 'demo') {
     await seedDemo(prisma)
-    const [products, customers, coupons] = await Promise.all([
+    const history = await seedDemoOrders()
+    const [products, customers, coupons, orders, reviews] = await Promise.all([
       prisma.product.count(),
       prisma.user.count({ where: { role: 'CUSTOMER' } }),
       prisma.coupon.count(),
+      prisma.order.count(),
+      prisma.review.count(),
     ])
     console.log(
-      `[seed] demo data ready: ${products} products, ${customers} customers, ${coupons} coupons`,
+      `[seed] demo data ready: ${products} products, ${customers} customers, ${coupons} coupons, ${orders} orders (${history.created} new), ${reviews} reviews`,
     )
     console.log('[seed] DEVELOPMENT ONLY admin: admin@velora.local / ChangeMe123!')
   }
