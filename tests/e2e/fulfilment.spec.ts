@@ -85,6 +85,15 @@ test('flows 16–19: an order moves from placement to shipping and stock follows
   await expect(header).toContainText(orderNumber)
   await expect(header).toContainText(t.orders.status.PENDING)
 
+  // The team can open the customer's invoice to print it.
+  const [invoice] = await Promise.all([
+    admin.context().waitForEvent('page'),
+    admin.getByRole('link', { name: t.admin.orders.detail.invoice }).click(),
+  ])
+  await expect(invoice.getByRole('heading', { level: 1 })).toBeVisible()
+  await expect(invoice.getByText(orderNumber)).toBeVisible()
+  await invoice.close()
+
   // Flow 17: confirm → prepare → ship.
   const actions = t.admin.orders.actions
   for (const [step, status] of [

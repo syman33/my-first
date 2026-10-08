@@ -57,8 +57,25 @@ export async function getCustomerOrder(
   locale: Locale,
   now: Date = new Date(),
 ): Promise<CustomerOrderDetail> {
+  return orderDetail({ id: orderId, userId }, locale, now)
+}
+
+/** The same view of any order, for the back office (callers check staff permissions). */
+export async function getOrderDetailForStaff(
+  orderId: string,
+  locale: Locale,
+  now: Date = new Date(),
+): Promise<CustomerOrderDetail> {
+  return orderDetail({ id: orderId }, locale, now)
+}
+
+async function orderDetail(
+  where: { id: string; userId?: string },
+  locale: Locale,
+  now: Date,
+): Promise<CustomerOrderDetail> {
   const order = await prisma.order.findFirst({
-    where: { id: orderId, userId },
+    where,
     include: {
       items: { orderBy: { createdAt: 'asc' } },
       statusHistory: { orderBy: { createdAt: 'asc' } },

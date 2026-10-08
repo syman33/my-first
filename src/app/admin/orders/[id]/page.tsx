@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { Route } from 'next'
 import { notFound } from 'next/navigation'
-import { AlertTriangle, ExternalLink, Printer } from 'lucide-react'
+import { AlertTriangle, ExternalLink, FileText, Printer } from 'lucide-react'
 import { AdminForbidden } from '@/components/admin/admin-forbidden'
 import { OrderActions } from '@/components/admin/orders/order-actions'
 import {
@@ -85,14 +85,24 @@ export default async function AdminOrderPage({ params }: PageProps<'/admin/order
         }
         description={interpolate(d.placed, { date: formatDateTime(order.createdAt, locale) })}
         actions={
-          <Link
-            href={`/admin/orders/${order.id}/packing-slip` as Route}
-            className={buttonClasses('subtle', 'sm')}
-            target="_blank"
-          >
-            <Printer className="size-4" aria-hidden="true" />
-            {d.packingSlip}
-          </Link>
+          <>
+            <Link
+              href={`/admin/orders/${order.id}/invoice` as Route}
+              className={buttonClasses('subtle', 'sm')}
+              target="_blank"
+            >
+              <FileText className="size-4" aria-hidden="true" />
+              {d.invoice}
+            </Link>
+            <Link
+              href={`/admin/orders/${order.id}/packing-slip` as Route}
+              className={buttonClasses('subtle', 'sm')}
+              target="_blank"
+            >
+              <Printer className="size-4" aria-hidden="true" />
+              {d.packingSlip}
+            </Link>
+          </>
         }
       />
 
