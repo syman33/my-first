@@ -91,7 +91,7 @@ export function CouponEditor(props: EditorProps) {
         {coupons.map((coupon) => (
           <li key={coupon.id} className="px-4 py-3">
             <div className="flex flex-wrap items-center gap-4 text-sm">
-              <span className="ltr-nums min-w-32 font-semibold tracking-wide text-ink">
+              <span className="ltr-nums min-w-32 font-medium tracking-wide text-ink">
                 {coupon.code}
               </span>
               <span className="min-w-32 text-text">{coupon.discountText}</span>

@@ -68,7 +68,7 @@ export default async function AdminMessagesPage({ searchParams }: PageProps<'/ad
         {rows.map((message) => (
           <tr key={message.id} className="hover:bg-ivory/50">
             <Td>
-              <p className={cn('text-ink', message.status === 'NEW' && 'font-semibold')}>
+              <p className={cn('text-ink', message.status === 'NEW' && 'font-medium')}>
                 {message.name}
               </p>
               <p className="text-xs text-muted">{message.email}</p>
@@ -78,7 +78,7 @@ export default async function AdminMessagesPage({ searchParams }: PageProps<'/ad
                 href={`/admin/messages/${message.id}` as Route}
                 className={cn(
                   'hover:underline',
-                  message.status === 'NEW' ? 'font-semibold text-ink' : 'text-text',
+                  message.status === 'NEW' ? 'font-medium text-ink' : 'text-text',
                 )}
                 dir="auto"
               >

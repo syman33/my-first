@@ -25,11 +25,6 @@ export const sansArabic = localFont({
       weight: '500',
       style: 'normal',
     },
-    {
-      path: '../fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2',
-      weight: '600',
-      style: 'normal',
-    },
   ],
   variable: '--font-sans-arabic',
   display: 'swap',
@@ -47,11 +42,6 @@ export const sansLatin = localFont({
     {
       path: '../fonts/ibm-plex-sans-arabic-latin-500-normal.woff2',
       weight: '500',
-      style: 'normal',
-    },
-    {
-      path: '../fonts/ibm-plex-sans-arabic-latin-600-normal.woff2',
-      weight: '600',
       style: 'normal',
     },
   ],

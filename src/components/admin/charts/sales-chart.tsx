@@ -194,9 +194,7 @@ export function SalesChart({
                   style={{ left: `${activeX}%` }}
                   dir={dir}
                 >
-                  <p className="ltr-nums text-sm font-semibold text-ink">
-                    {activePoint.valueLabel}
-                  </p>
+                  <p className="ltr-nums text-sm font-medium text-ink">{activePoint.valueLabel}</p>
                   <p className="mt-0.5 text-muted">{activePoint.ordersLabel}</p>
                   <p className="mt-1 text-muted">{activePoint.label}</p>
                 </div>

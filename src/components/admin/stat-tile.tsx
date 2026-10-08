@@ -21,7 +21,7 @@ export function StatTile({
   return (
     <div className="border border-line bg-paper p-5">
       <p className="text-xs text-muted">{label}</p>
-      <p className="ltr-nums mt-2 text-xl font-semibold text-ink 2xl:text-2xl">{value}</p>
+      <p className="ltr-nums mt-2 text-xl font-medium text-ink 2xl:text-2xl">{value}</p>
       <p
         className={cn(
           'mt-2 flex items-center gap-1.5 text-xs',

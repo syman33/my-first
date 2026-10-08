@@ -78,7 +78,7 @@ export default async function AdminCustomerPage({ params }: PageProps<'/admin/cu
         ].map((stat) => (
           <div key={stat.label} className="border border-line bg-paper p-4">
             <p className="text-xs text-muted">{stat.label}</p>
-            <p className="ltr-nums mt-1 text-lg font-semibold text-ink">{stat.value}</p>
+            <p className="ltr-nums mt-1 text-lg font-medium text-ink">{stat.value}</p>
           </div>
         ))}
       </section>

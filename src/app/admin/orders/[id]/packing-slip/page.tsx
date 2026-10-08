@@ -51,7 +51,7 @@ export default async function PackingSlipPage({
         </div>
         <div className="text-end text-sm">
           <h1 className="font-medium text-ink">{t.title}</h1>
-          <p className="ltr-nums mt-1 text-lg font-semibold text-ink">{order.orderNumber}</p>
+          <p className="ltr-nums mt-1 text-lg font-medium text-ink">{order.orderNumber}</p>
           <p className="text-muted">
             {t.orderDate}: {formatDate(order.createdAt, locale)}
           </p>
@@ -82,7 +82,7 @@ export default async function PackingSlipPage({
             {dict.paymentMethodNames[order.paymentMethod]}
           </p>
           {collectCash ? (
-            <p className="border border-ink px-3 py-2 font-semibold text-ink">
+            <p className="border border-ink px-3 py-2 font-medium text-ink">
               {interpolate(t.codCollect, { amount: formatMoney(order.total, locale) })}
             </p>
           ) : null}
@@ -115,7 +115,7 @@ export default async function PackingSlipPage({
                 ) : null}
               </td>
               <td className="ltr-nums py-3 text-muted">{item.sku}</td>
-              <td className="py-3 text-end text-base font-semibold tabular-nums">
+              <td className="py-3 text-end text-base font-medium tabular-nums">
                 {formatNumber(item.quantity, locale)}
               </td>
             </tr>
