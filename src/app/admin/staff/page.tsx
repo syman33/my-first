@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import type { Route } from 'next'
 import { AdminForbidden } from '@/components/admin/admin-forbidden'
 import { PostAction } from '@/components/admin/post-action'
 import { InviteStaffForm } from '@/components/admin/staff/invite-staff-form'
@@ -69,6 +71,12 @@ export default async function AdminStaffPage() {
                 <p className="text-xs text-muted" dir="ltr">
                   {member.email}
                 </p>
+                <Link
+                  href={`/admin/audit?actor=${member.id}` as Route}
+                  className="text-xs text-muted underline-offset-4 hover:text-ink hover:underline"
+                >
+                  {dict.admin.audit.activity}
+                </Link>
               </Td>
               <Td>
                 <Badge tone={member.role === 'ADMIN' ? 'accent' : 'neutral'}>
