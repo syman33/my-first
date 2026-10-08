@@ -36,7 +36,9 @@
     "postinstall": "prisma generate",
     "e2e:prepare": "tsx scripts/e2e/prepare-db.ts",
     "assets:images": "tsx scripts/assets/generate-images.ts",
-    "perf:benchmark": "tsx --conditions=react-server scripts/perf/benchmark.ts"
+    "perf:benchmark": "tsx --conditions=react-server scripts/perf/benchmark.ts",
+    "smoke": "tsx scripts/smoke/smoke.ts",
+    "db:restore-drill": "bash scripts/db/restore-drill.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",

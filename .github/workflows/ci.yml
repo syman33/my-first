@@ -129,6 +129,52 @@ jobs:
       - run: npm ci
       - run: npm run perf:benchmark
 
+  backup-restore:
+    name: Backup and restore drill
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: velora
+          POSTGRES_PASSWORD: velora_ci_password
+          POSTGRES_DB: velora_drill_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U velora -d velora_drill_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      # Seeded through the real services (orders, payments, refunds, audit trail),
+      # dumped with pg_dump, restored with pg_restore and verified.
+      DATABASE_URL: postgresql://velora:velora_ci_password@localhost:5432/velora_drill_test
+      SOURCE_DATABASE_URL: postgresql://velora:velora_ci_password@localhost:5432/velora_drill_test
+      RESTORE_DATABASE_URL: postgresql://velora:velora_ci_password@localhost:5432/velora_restore_test
+      NODE_ENV: test
+      APP_ENV: test
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      AUTH_SECRET: ci-drill-auth-secret-that-is-long-enough-0123456789
+      PAYMENT_PROVIDER: mock
+      MOCK_PAYMENT_WEBHOOK_SECRET: ci-drill-mock-webhook-secret-0123456789
+      SHIPPING_PROVIDER: mock
+      EMAIL_PROVIDER: console
+      STORAGE_PROVIDER: local
+      SEED_PROFILE: demo
+      VELORA_SILENT_LOGS: 'true'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate:deploy
+      - run: npm run db:seed
+      - run: npm run db:restore-drill
+
   e2e:
     name: End-to-end tests (Playwright)
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -161,6 +207,29 @@ jobs:
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - name: Smoke test the production build (scripts/smoke)
+        env:
+          NODE_ENV: production
+          APP_ENV: test
+          DATABASE_URL: ${{ env.E2E_DATABASE_URL }}
+          NEXT_PUBLIC_APP_URL: http://localhost:3200
+          AUTH_SECRET: e2e-auth-secret-that-is-long-enough-for-hmac-0123456789
+          CRON_SECRET: e2e-cron-secret-0123456789abcdef0123456789abcdef
+          PAYMENT_PROVIDER: mock
+          MOCK_PAYMENT_WEBHOOK_SECRET: e2e-mock-webhook-secret-0123456789
+          SHIPPING_PROVIDER: mock
+          EMAIL_PROVIDER: console
+          STORAGE_PROVIDER: local
+          RATE_LIMIT_PROVIDER: postgres
+          ALLOW_MOCK_PROVIDERS_IN_PRODUCTION: 'true'
+          LOG_LEVEL: warn
+        run: |
+          npx next start -p 3200 &
+          for attempt in $(seq 1 60); do
+            curl -fsS http://localhost:3200/api/health > /dev/null && break
+            sleep 1
+          done
+          npm run smoke -- http://localhost:3200
       - name: Upload the Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
