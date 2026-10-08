@@ -87,7 +87,8 @@ export async function submitReview(
           'REVIEW_NOT_ALLOWED',
           'This product cannot be reviewed by this account',
           {
-            status: 403,
+            // Reviewing twice is a conflict (as when two submissions race); anything else is refused.
+            status: eligibility.reason === 'ALREADY_REVIEWED' ? 409 : 403,
             details: { reason: eligibility.reason },
           },
         )

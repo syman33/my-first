@@ -91,7 +91,9 @@ describe('product listings', () => {
     await createProduct({ nameEn: 'Mid', price: 59_900 })
     await createProduct({ nameEn: 'Dear', price: 199_900 })
     expect(await names({ kind: 'all' }, { min: '200', max: '1000' })).toEqual(['Mid'])
-    expect((await names({ kind: 'all' }, { max: '599' })).sort()).toEqual(['Cheap'])
+    // Bounds are inclusive: "up to SAR 599" includes a SAR 599.00 product.
+    expect((await names({ kind: 'all' }, { max: '598' })).sort()).toEqual(['Cheap'])
+    expect((await names({ kind: 'all' }, { max: '599' })).sort()).toEqual(['Cheap', 'Mid'])
   })
 
   it('finds offers from product-level and variant-level compare-at prices', async () => {

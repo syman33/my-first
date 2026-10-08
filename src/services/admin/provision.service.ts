@@ -49,6 +49,11 @@ export async function provisionAdministrator(input: {
   const passwordHash = await hashPassword(input.password)
 
   return prisma.$transaction(async (tx) => {
+    if (!(await tx.role.findUnique({ where: { key: 'ADMIN' }, select: { key: true } }))) {
+      throw new ProvisioningError(
+        'Roles are not set up in this database yet. Load the reference data first: SEED_PROFILE=reference npm run db:seed',
+      )
+    }
     const existing = await tx.user.findUnique({
       where: { email: email.data },
       select: { id: true },

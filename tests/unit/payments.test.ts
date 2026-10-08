@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { requestFingerprint } from '@/lib/idempotency'
+import {
+  IDEMPOTENCY_SCOPE_MAX_LENGTH,
+  requestFingerprint,
+  withIdempotency,
+} from '@/lib/idempotency'
 import {
   MOCK_SIGNATURE_HEADER,
   MockPaymentProvider,
@@ -102,5 +106,17 @@ describe('idempotency fingerprint', () => {
     )
     expect(requestFingerprint({ a: 1 })).not.toBe(requestFingerprint({ a: 2 }))
     expect(requestFingerprint([1, 2])).not.toBe(requestFingerprint([2, 1]))
+  })
+
+  it('fits entity-scoped keys and refuses oversized scopes before touching the database', async () => {
+    // The return route scopes keys per order: "return:<uuid>" (43 characters).
+    expect(`return:${crypto.randomUUID()}`.length).toBeLessThanOrEqual(IDEMPOTENCY_SCOPE_MAX_LENGTH)
+    const run = () => Promise.resolve({ ok: true })
+    await expect(
+      withIdempotency(
+        { scope: 'x'.repeat(IDEMPOTENCY_SCOPE_MAX_LENGTH + 1), key: 'k', userId: null, body: {} },
+        run,
+      ),
+    ).rejects.toThrow(/longer than 80/)
   })
 })

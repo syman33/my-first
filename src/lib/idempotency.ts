@@ -20,6 +20,8 @@ import { addHours, addMinutes } from '@/utils/time'
  */
 
 const KEY_PATTERN = /^[A-Za-z0-9_-]{16,100}$/
+/** Matches `idempotency_keys.scope` (VARCHAR(80)); scopes may embed an entity id. */
+export const IDEMPOTENCY_SCOPE_MAX_LENGTH = 80
 const LOCK_MINUTES = 2
 const RETENTION_HOURS = 24
 
@@ -50,6 +52,10 @@ export async function withIdempotency<T extends Prisma.InputJsonValue>(
   options: { scope: string; key: string; userId: string | null; body: unknown; now?: Date },
   run: () => Promise<T>,
 ): Promise<IdempotentOutcome<T>> {
+  if (options.scope.length > IDEMPOTENCY_SCOPE_MAX_LENGTH) {
+    // A programming error: fail loudly instead of as an opaque database error.
+    throw new Error(`Idempotency scope longer than ${IDEMPOTENCY_SCOPE_MAX_LENGTH} characters`)
+  }
   const now = options.now ?? new Date()
   const requestHash = requestFingerprint(options.body)
   const lockedUntil = addMinutes(now, LOCK_MINUTES)

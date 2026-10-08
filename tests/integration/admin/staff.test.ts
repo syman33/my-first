@@ -14,7 +14,7 @@ import {
   suspendDevelopmentAccounts,
 } from '@/services/admin/provision.service'
 import { signedInStaff } from '../helpers/checkout'
-import { createUser } from '../helpers/factories'
+import { createUser, ensureRoles } from '../helpers/factories'
 import { TestClient } from '../helpers/http'
 
 type Body = {
@@ -182,7 +182,15 @@ describe('team management', () => {
 describe('operator provisioning (npm run admin:create)', () => {
   const owner = { email: 'owner@example.test', name: 'Store Owner', productionLike: true }
 
+  it('explains that reference data must be loaded first on an empty database', async () => {
+    await expect(
+      provisionAdministrator({ ...owner, password: 'Amber-Courtyard-Lantern', reset: false }),
+    ).rejects.toThrow(/SEED_PROFILE=reference npm run db:seed/)
+    expect(await prisma.user.count()).toBe(0)
+  })
+
   it('creates an administrator with a strong password and refuses weak ones', async () => {
+    await ensureRoles()
     await expect(
       provisionAdministrator({ ...owner, password: 'short-pass', reset: false }),
     ).rejects.toBeInstanceOf(ProvisioningError)

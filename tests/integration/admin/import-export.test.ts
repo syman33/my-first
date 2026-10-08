@@ -95,6 +95,8 @@ describe('product import', () => {
       { row: 3, column: 'category', code: 'unknownCategory' },
       { row: 4, column: 'stock', code: 'belowReserved' },
       { row: 5, column: 'variant_sku', code: 'duplicateInFile' },
+      // Rows 2 and 5 are both new products named "حقيبة": their Arabic slugs collide.
+      { row: 5, column: 'slug_ar', code: 'slugTaken' },
     ])
     expect(await prisma.product.count({ where: { sku: 'VLR-GOOD-01' } })).toBe(0)
     expect(
