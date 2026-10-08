@@ -815,6 +815,10 @@ model Order {
   @@index([status, createdAt])
   @@index([paymentStatus, createdAt])
   @@index([createdAt])
+  // Back-office search: substring matches on number, email and name (pg_trgm).
+  @@index([orderNumber(ops: raw("gin_trgm_ops"))], type: Gin, map: "orders_order_number_trgm_idx")
+  @@index([shippingEmail(ops: raw("gin_trgm_ops"))], type: Gin, map: "orders_shipping_email_trgm_idx")
+  @@index([shippingName(ops: raw("gin_trgm_ops"))], type: Gin, map: "orders_shipping_name_trgm_idx")
   @@map("orders")
 }
 

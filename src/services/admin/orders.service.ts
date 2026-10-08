@@ -23,7 +23,19 @@ export interface AdminOrderFilters {
   to?: Date
 }
 
-export function orderWhere(filters: AdminOrderFilters): Prisma.OrderWhereInput {
+/** Accounts whose current email matches are found first, so every OR branch below is indexable. */
+const MAX_MATCHED_ACCOUNTS = 50
+
+/**
+ * Search terms match the order's own number, email and name (trigram GIN
+ * indexes), its phone (exact), or the customer's current account email via a
+ * short list of user ids — never a join inside the OR, which would force a
+ * scan of every order.
+ */
+export function orderWhere(
+  filters: AdminOrderFilters,
+  matchedUserIds: string[] = [],
+): Prisma.OrderWhereInput {
   const and: Prisma.OrderWhereInput[] = []
   if (filters.q) {
     const q = filters.q
@@ -33,7 +45,7 @@ export function orderWhere(filters: AdminOrderFilters): Prisma.OrderWhereInput {
         { orderNumber: { contains: q, mode: 'insensitive' } },
         { shippingEmail: { contains: q, mode: 'insensitive' } },
         { shippingName: { contains: q, mode: 'insensitive' } },
-        { user: { email: { contains: q, mode: 'insensitive' } } },
+        ...(matchedUserIds.length > 0 ? [{ userId: { in: matchedUserIds } }] : []),
         ...(phone ? [{ shippingPhone: phone }] : []),
       ],
     })
@@ -54,7 +66,17 @@ export async function listAdminOrders(
   page: number,
   pageSize: number,
 ): Promise<{ rows: AdminOrderRow[]; total: number }> {
-  const where = orderWhere(filters)
+  const matchedUsers = filters.q
+    ? await prisma.user.findMany({
+        where: { email: { contains: filters.q, mode: 'insensitive' } },
+        select: { id: true },
+        take: MAX_MATCHED_ACCOUNTS,
+      })
+    : []
+  const where = orderWhere(
+    filters,
+    matchedUsers.map((user) => user.id),
+  )
   const [total, orders] = await prisma.$transaction([
     prisma.order.count({ where }),
     prisma.order.findMany({
