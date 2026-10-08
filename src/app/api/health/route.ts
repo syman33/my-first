@@ -22,7 +22,8 @@ export async function GET(): Promise<Response> {
       status: healthy ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
       environment: process.env.APP_ENV ?? process.env.NODE_ENV ?? 'unknown',
-      release: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+      // The deployed commit (Vercel sets it; other hosts can set APP_RELEASE at build or start).
+      release: (process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.APP_RELEASE)?.slice(0, 7) ?? null,
       checks: { database },
       latencyMs: Math.round(performance.now() - started),
     },

@@ -74,15 +74,23 @@ missing `CRON_SECRET`, development providers, in-memory rate limiting).
 
 1. Open a pull request. **CI** must pass: format, typecheck, lint, unit tests, dependency
    audit, migration drift check, integration tests on PostgreSQL, production build,
-   end-to-end tests (including accessibility) with a smoke test, the query benchmark, and
-   the backup/restore drill. Protect `main` so merging requires these checks.
-2. **Migrations first, code second.** Write migrations to be backward compatible with the
+   end-to-end tests (including accessibility and broken links) with a smoke test, the query
+   benchmark, and the backup/restore drill. Protect `main` so merging requires these checks.
+2. Release with the **Release** workflow (Actions → Release → environment), which automates step
+   3 below and stops at the first failure: it refuses a commit whose CI is not
+   green, applies the migrations, calls the deploy hook, waits until `/api/health` reports
+   the new commit, and runs the smoke test. Configure a GitHub Environment per target with
+   `MIGRATION_DATABASE_URL` and `DEPLOY_HOOK_URL` secrets and an `APP_URL` variable; give
+   `production` required reviewers so a person approves each production release. If your
+   host deploys on every push to `main` by itself, turn that off for production so releases
+   only go out through this workflow.
+3. **Migrations first, code second.** Write migrations to be backward compatible with the
    running code (add columns/tables/indexes; remove only in a later release), then:
    - apply them to **staging**, deploy staging, run `npm run smoke -- <staging url>` and
      walk the critical flows (browse → bag → checkout with the Moyasar sandbox → admin ships
      the order → customer sees it);
    - apply them to **production** (`npm run db:migrate:deploy`), deploy, smoke test.
-3. Check `npm run db:migrate:status` reports no pending migrations.
+4. Check `npm run db:migrate:status` reports no pending migrations.
 
 Large tables: `CREATE INDEX` locks writes while it builds. When a table has grown large,
 create the index manually with `CREATE INDEX CONCURRENTLY` before deploying, then mark the

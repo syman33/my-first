@@ -1,0 +1,98 @@
+# Release to staging or production: run by hand from the Actions tab.
+#
+# Order: CI must have passed on the exact commit → migrations (backward
+# compatible, see docs/operations.md) → deploy → wait until the site serves
+# that commit → smoke test. Configure one GitHub Environment per target
+# ("staging", "production" — add required reviewers to production) with:
+#   secrets.MIGRATION_DATABASE_URL  direct (non-pooled) connection string
+#   secrets.DEPLOY_HOOK_URL         hosting deploy hook (e.g. Vercel) building this branch
+#   vars.APP_URL                    public URL, e.g. https://velora.example
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [staging, production]
+        required: true
+
+permissions:
+  contents: read
+  checks: read
+
+concurrency:
+  group: release-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release ${{ github.sha }} to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.environment }}
+    env:
+      APP_URL: ${{ vars.APP_URL }}
+    steps:
+      - name: Check the environment is configured
+        env:
+          MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
+          DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+        run: |
+          missing=()
+          [ -n "$MIGRATION_DATABASE_URL" ] || missing+=(secrets.MIGRATION_DATABASE_URL)
+          [ -n "$DEPLOY_HOOK_URL" ] || missing+=(secrets.DEPLOY_HOOK_URL)
+          [ -n "$APP_URL" ] || missing+=(vars.APP_URL)
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Environment '${{ inputs.environment }}' is not configured: ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Require green CI on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          runs=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs?per_page=100" \
+            --jq '[.check_runs[] | select(.app.slug == "github-actions") | {name, conclusion}]')
+          echo "$runs" | jq -r '.[] | "\(.conclusion)\t\(.name)"'
+          total=$(echo "$runs" | jq 'length')
+          failing=$(echo "$runs" | jq '[.[] | select(.conclusion != "success" and .conclusion != "skipped" and .name != "Release ${{ github.sha }} to ${{ inputs.environment }}")] | length')
+          if [ "$total" -lt 6 ] || [ "$failing" -gt 0 ]; then
+            echo "::error::CI has not fully passed on ${{ github.sha }}; refusing to release."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
+        run: |
+          npx prisma migrate status || true
+          npx prisma migrate deploy
+
+      - name: Deploy
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+        run: curl -fsS -X POST "$DEPLOY_HOOK_URL" > /dev/null
+
+      - name: Wait until the site serves this commit
+        run: |
+          expected="${GITHUB_SHA:0:7}"
+          for attempt in $(seq 1 60); do
+            release=$(curl -fsS "$APP_URL/api/health" | jq -r '.release // empty' || true)
+            if [ "$release" = "$expected" ]; then echo "Serving $release"; exit 0; fi
+            echo "Waiting for $expected (serving: ${release:-unknown})"
+            sleep 10
+          done
+          echo "::error::$APP_URL did not start serving $expected within 10 minutes"
+          exit 1
+
+      - name: Smoke test
+        run: npm run smoke -- "$APP_URL"
