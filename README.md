@@ -28,6 +28,8 @@ service is connected.
 - [Security](#security) · [Backups](#backups-and-restore) · [Troubleshooting](#troubleshooting)
 - Deeper docs: [Architecture decisions](docs/decisions.md) ·
   [Operations](docs/operations.md) · [Performance](docs/performance.md)
+- For the store owner: [Owner's guide](docs/OWNER_GUIDE.md) ·
+  [Verification report](docs/VERIFICATION_REPORT.md)
 
 ## Features
 
