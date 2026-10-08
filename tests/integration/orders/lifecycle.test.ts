@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { POST as cancelRoute } from '@/app/api/orders/[id]/cancel/route'
 import { GET as orderRoute } from '@/app/api/orders/[id]/route'
-import { POST as releaseCron } from '@/app/api/cron/release-reservations/route'
+import {
+  GET as releaseCronGet,
+  POST as releaseCron,
+} from '@/app/api/cron/release-reservations/route'
 import { prisma } from '@/db/client'
 import { confirmOrder } from '@/services/orders/order-lifecycle.service'
 import { SYSTEM_ACTOR } from '@/services/audit/audit.service'
@@ -102,8 +105,15 @@ describe('order lifecycle', () => {
 
     const anonymous = await new TestClient().call(releaseCron, { method: 'POST', noOrigin: true })
     expect(anonymous.status).toBe(401)
-    const authorised = await new TestClient().call<{ data: { released: number } }>(releaseCron, {
-      method: 'POST',
+    const wrongSecret = await new TestClient().call(releaseCronGet, {
+      method: 'GET',
+      noOrigin: true,
+      headers: { authorization: 'Bearer not-the-secret' },
+    })
+    expect(wrongSecret.status).toBe(401)
+    // As Vercel Cron calls it: GET with the bearer secret.
+    const authorised = await new TestClient().call<{ data: { released: number } }>(releaseCronGet, {
+      method: 'GET',
       noOrigin: true,
       headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
     })

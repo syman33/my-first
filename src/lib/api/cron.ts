@@ -11,7 +11,7 @@ import { safeEqual } from '@/lib/security/tokens'
  * the endpoint is disabled. Jobs are idempotent, so retries are harmless.
  */
 export function cronHandler(name: string, job: () => Promise<Record<string, unknown>>) {
-  return async function POST(req: NextRequest): Promise<NextResponse> {
+  return async function runCron(req: NextRequest): Promise<NextResponse> {
     const secret = env().CRON_SECRET
     const header = req.headers.get('authorization') ?? ''
     const token = header.startsWith('Bearer ') ? header.slice(7) : ''
