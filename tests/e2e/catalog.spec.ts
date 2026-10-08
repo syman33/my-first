@@ -32,3 +32,22 @@ test('filters narrow the listing, live in the URL and survive a reload', async (
   await empty.getByRole('link', { name: t.store.listing.clearAll }).click()
   await expect(cards.first()).toBeVisible()
 })
+
+test('unknown pages answer with real status codes for crawlers', async ({ request }) => {
+  // Checked before the page streams, so these are true HTTP statuses, not soft 404s.
+  const missingProduct = await request.get(`/ar/product/${encodeURIComponent('منتج-غير-موجود')}`, {
+    maxRedirects: 0,
+  })
+  expect(missingProduct.status()).toBe(404)
+  expect((await request.get('/ar/no-such-category', { maxRedirects: 0 })).status()).toBe(404)
+
+  // The other language's slug moves permanently to this language's URL.
+  const crossLanguage = await request.get(
+    '/en/product/' + encodeURIComponent('حقيبة-لونا-الكتفية'),
+    {
+      maxRedirects: 0,
+    },
+  )
+  expect(crossLanguage.status()).toBe(308)
+  expect(crossLanguage.headers()['location']).toMatch(/\/en\/product\/luna-shoulder-bag$/)
+})

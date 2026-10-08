@@ -11,7 +11,6 @@ import {
   categoryAncestry,
   childCategories,
   descendantIds,
-  getActiveCategories,
 } from '@/services/catalog/category.service'
 import {
   getListingFacets,
@@ -19,7 +18,7 @@ import {
   listProducts,
 } from '@/services/catalog/listing.service'
 import { getWishlistProductIds } from '@/services/wishlist/wishlist.service'
-import { decodeSlugParam } from '@/utils/text'
+import { resolveCategory } from './resolve-category'
 
 function scopeFor(category: CategoryNode, categories: CategoryNode[]): ListingScope {
   switch (category.kind) {
@@ -42,21 +41,13 @@ function defaultSortFor(category: CategoryNode): SortOption {
   return 'featured'
 }
 
-async function resolve(rawSlug: string) {
-  const slug = decodeSlugParam(rawSlug)
-  if (!slug) return null
-  const categories = await getActiveCategories()
-  const category = categories.find((c) => c.slug === slug)
-  return category ? { category, categories } : null
-}
-
 export async function generateMetadata({
   params,
   searchParams,
 }: PageProps<'/[locale]/[category]'>): Promise<Metadata> {
   const { locale, category: rawSlug } = await params
   if (!isLocale(locale)) return {}
-  const resolved = await resolve(rawSlug)
+  const resolved = await resolveCategory(rawSlug)
   if (!resolved) return {}
   const { category } = resolved
   const filters = parseListingParams(await searchParams, { sort: defaultSortFor(category) })
@@ -85,7 +76,7 @@ export default async function CategoryPage({
   const { locale: rawLocale, category: rawSlug } = await params
   if (!isLocale(rawLocale)) notFound()
   const locale: Locale = rawLocale
-  const resolved = await resolve(rawSlug)
+  const resolved = await resolveCategory(rawSlug)
   if (!resolved) notFound()
   const { category, categories } = resolved
 

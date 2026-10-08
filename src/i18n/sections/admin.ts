@@ -79,6 +79,11 @@ const ar = {
     home: 'العودة إلى لوحة الإدارة',
     store: 'العودة إلى المتجر',
   },
+  notFound: {
+    title: 'غير موجود',
+    body: 'لم نعثر على ما تبحث عنه. ربما حُذف أو أن الرابط غير صحيح.',
+    home: 'العودة إلى لوحة الإدارة',
+  },
   table: {
     empty: 'لا توجد نتائج.',
     emptyFiltered: 'لا توجد نتائج مطابقة. جرّب تعديل التصفية.',
@@ -1287,6 +1292,11 @@ const en: typeof ar = {
     customerBody: 'The admin area is for the VÉLORA team.',
     home: 'Back to the dashboard',
     store: 'Back to the store',
+  },
+  notFound: {
+    title: 'Not found',
+    body: 'We could not find what you were looking for. It may have been removed, or the link is wrong.',
+    home: 'Back to the dashboard',
   },
   table: {
     empty: 'Nothing here yet.',
