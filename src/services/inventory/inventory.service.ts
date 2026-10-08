@@ -188,7 +188,7 @@ export async function restock(
 export async function adjustStock(
   tx: DbClient,
   line: StockLine & { delta: number },
-  type: 'RESTOCK' | 'DAMAGE_WRITE_OFF' | 'MANUAL_ADJUSTMENT',
+  type: 'RESTOCK' | 'DAMAGE_WRITE_OFF' | 'MANUAL_ADJUSTMENT' | 'IMPORT',
   ctx: MovementContext,
 ): Promise<{ onHand: number; reserved: number }> {
   if (!Number.isInteger(line.delta) || line.delta === 0) {

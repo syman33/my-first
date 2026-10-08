@@ -31,6 +31,7 @@ export const AUDIT_ENTITY_TYPES = [
   'newsletter',
   'contact_message',
   'notification',
+  'catalog',
 ] as const
 export type AuditEntityType = (typeof AUDIT_ENTITY_TYPES)[number]
 
@@ -133,6 +134,8 @@ export function auditEntityHref(
       return '/admin/newsletter'
     case 'notification':
       return '/admin/notifications'
+    case 'catalog':
+      return '/admin/products'
     default:
       return null
   }

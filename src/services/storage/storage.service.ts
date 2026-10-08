@@ -45,14 +45,16 @@ export const IMAGE_CONTENT_TYPES: Record<string, string> = {
   avif: 'image/avif',
 }
 
+// Runtime-only paths (uploads live outside the build): told to the bundler so it
+// does not trace the whole project into the server output.
 export function localUploadRoot(): string {
-  return path.resolve(process.cwd(), env().UPLOAD_DIR)
+  return path.resolve(/* turbopackIgnore: true */ process.cwd(), env().UPLOAD_DIR)
 }
 
 /** Absolute path of a key inside the upload root, or null if it would escape it. */
 export function localPathFor(key: string): string | null {
   const root = localUploadRoot()
-  const resolved = path.resolve(root, key)
+  const resolved = path.resolve(/* turbopackIgnore: true */ root, key)
   return resolved.startsWith(root + path.sep) ? resolved : null
 }
 

@@ -273,7 +273,7 @@ async function assertCatalogRefs(
 }
 
 /** Recompute what the storefront derives from a product and its variants. */
-async function refreshDerived(tx: DbClient, productId: string): Promise<void> {
+export async function refreshDerived(tx: DbClient, productId: string): Promise<void> {
   const product = await tx.product.findUniqueOrThrow({
     where: { id: productId },
     include: {

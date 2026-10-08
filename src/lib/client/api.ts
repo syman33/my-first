@@ -116,3 +116,45 @@ export async function apiUpload<T>(
   }
   return (payload as { data: T }).data
 }
+
+/**
+ * Download a file from an authenticated GET endpoint (CSV exports): errors
+ * come back as the usual localised API error instead of a raw JSON page.
+ */
+export async function apiDownload(
+  path: string,
+  options: { locale: 'ar' | 'en'; fallbackName: string },
+): Promise<void> {
+  let response: Response
+  try {
+    response = await fetch(path, {
+      credentials: 'same-origin',
+      headers: { 'x-velora-locale': options.locale },
+    })
+  } catch {
+    throw new ApiClientError(0, { code: 'NETWORK_ERROR', message: NETWORK_MESSAGE[options.locale] })
+  }
+  if (!response.ok) {
+    let body: { error?: ApiErrorBody; requestId?: string } = {}
+    try {
+      body = (await response.json()) as typeof body
+    } catch {
+      body = {}
+    }
+    throw new ApiClientError(
+      response.status,
+      body.error ?? { code: 'INTERNAL_ERROR', message: NETWORK_MESSAGE[options.locale] },
+      body.requestId,
+    )
+  }
+  const disposition = response.headers.get('content-disposition') ?? ''
+  const name = /filename="([^"]+)"/.exec(disposition)?.[1] ?? options.fallbackName
+  const url = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = name
+  document.body.append(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
