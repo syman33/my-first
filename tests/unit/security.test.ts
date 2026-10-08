@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildContentSecurityPolicy, generateNonce } from '@/lib/security/csp'
 import { checkRequestOrigin, requestOrigin } from '@/lib/security/origin'
-import { redact } from '@/lib/logger'
+import { redact, redactLinkSecrets } from '@/lib/logger'
 
 describe('Content-Security-Policy', () => {
   it('is strict in production: nonce + strict-dynamic, no eval, no framing', () => {
@@ -143,6 +143,20 @@ describe('log redaction', () => {
     expect(out.phone).toBe('***0000')
     expect(out.orderNumber).toBe('VLR-2026-000001')
     expect(out.company).toBe('kept')
+  })
+
+  it('removes secrets from links inside free text, under any key', () => {
+    const text =
+      'Reset: https://velora.sa/ar/reset-password#token=abc123XYZ\nUnsubscribe: https://velora.sa/en/newsletter/unsubscribe?t=SEALED.value&lang=en'
+    expect(redactLinkSecrets(text)).toBe(
+      'Reset: https://velora.sa/ar/reset-password#token=[REDACTED]\nUnsubscribe: https://velora.sa/en/newsletter/unsubscribe?t=[REDACTED]&lang=en',
+    )
+    expect(redact({ preview: 'Verify: /ar/verify-email#token=s3cr3t' })).toEqual({
+      preview: 'Verify: /ar/verify-email#token=[REDACTED]',
+    })
+    expect(redact(['see /x?code=999&page=2'])).toEqual(['see /x?code=[REDACTED]&page=2'])
+    // Ordinary text is untouched.
+    expect(redactLinkSecrets('Order VLR-2026-000123 shipped')).toBe('Order VLR-2026-000123 shipped')
   })
 
   it('handles errors and circular structures', () => {

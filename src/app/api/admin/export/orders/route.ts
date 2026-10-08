@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { requireAlso } from '@/lib/api/admin'
 import { apiHandler } from '@/lib/api/handler'
+import { RATE_LIMITS } from '@/lib/rate-limit'
 import { csvHeaders, toCsv } from '@/lib/csv'
 import { ORDER_EXPORT_COLUMNS, exportOrders } from '@/services/admin/exports.service'
 import { addDays, parseStoreDateKey, toStoreDateKey } from '@/utils/time'
@@ -32,19 +33,26 @@ const querySchema = z.object({
 })
 
 /** Orders as CSV for accounting (store-time dates, SAR amounts). `to` is inclusive. */
-export const GET = apiHandler({ auth: 'staff', permission: 'IMPORT_EXPORT' }, async (ctx) => {
-  requireAlso(ctx.user, 'ORDERS_VIEW')
-  const query = ctx.query(querySchema)
-  const rows = await exportOrders(
-    {
-      from: query.from ? parseStoreDateKey(query.from) : undefined,
-      to: query.to ? addDays(parseStoreDateKey(query.to), 1) : undefined,
-      status: query.status,
-    },
-    ctx.audit,
-  )
-  const columns = ORDER_EXPORT_COLUMNS.map((column) => ({ key: column, header: column }))
-  return new Response(toCsv(rows, columns), {
-    headers: csvHeaders(`velora-orders-${toStoreDateKey(new Date())}.csv`),
-  })
-})
+export const GET = apiHandler(
+  {
+    auth: 'staff',
+    permission: 'IMPORT_EXPORT',
+    rateLimit: (ctx) => [{ rule: RATE_LIMITS.exports, subject: ctx.user?.id ?? ctx.ip }],
+  },
+  async (ctx) => {
+    requireAlso(ctx.user, 'ORDERS_VIEW')
+    const query = ctx.query(querySchema)
+    const rows = await exportOrders(
+      {
+        from: query.from ? parseStoreDateKey(query.from) : undefined,
+        to: query.to ? addDays(parseStoreDateKey(query.to), 1) : undefined,
+        status: query.status,
+      },
+      ctx.audit,
+    )
+    const columns = ORDER_EXPORT_COLUMNS.map((column) => ({ key: column, header: column }))
+    return new Response(toCsv(rows, columns), {
+      headers: csvHeaders(`velora-orders-${toStoreDateKey(new Date())}.csv`),
+    })
+  },
+)

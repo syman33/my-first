@@ -146,4 +146,6 @@ export const RATE_LIMITS = {
   uploads: { name: 'upload:user', limit: 60, windowSeconds: 10 * 60 },
   webhook: { name: 'webhook:ip', limit: 600, windowSeconds: 60 },
   adminWrite: { name: 'admin:user', limit: 600, windowSeconds: 10 * 60 },
+  /** CSV exports read whole tables: a handful per person is plenty. */
+  exports: { name: 'export:user', limit: 20, windowSeconds: 10 * 60 },
 } as const satisfies Record<string, RateLimitRule>

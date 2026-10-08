@@ -1,5 +1,7 @@
 import 'server-only'
-import { logger, maskEmail } from '@/lib/logger'
+import { mkdir, writeFile } from 'node:fs/promises'
+import path from 'node:path'
+import { logger, maskEmail, redactLinkSecrets } from '@/lib/logger'
 
 /**
  * Notification delivery providers.
@@ -33,15 +35,41 @@ export interface EmailProvider {
   send(email: OutgoingEmail): Promise<DeliveryResult>
 }
 
-/** Development provider: prints the message, delivers nothing. */
+/**
+ * In development, the full message (links included) goes to a local mailbox
+ * folder instead of the log, so reset and verification links can be opened
+ * without ever writing a token to a log.
+ */
+async function saveToDevMailbox(email: OutgoingEmail): Promise<string | null> {
+  if (process.env.NODE_ENV !== 'development') return null
+  try {
+    const dir = path.resolve(/* turbopackIgnore: true */ process.cwd(), 'storage', 'dev-mail')
+    await mkdir(dir, { recursive: true })
+    const name = `${new Date().toISOString().replace(/[:.]/g, '-')}-${(email.tag ?? 'email').replace(/[^\w-]/g, '')}`
+    await writeFile(path.join(dir, `${name}.html`), email.html, 'utf8')
+    await writeFile(
+      path.join(dir, `${name}.txt`),
+      `To: ${email.to}\nSubject: ${email.subject}\n\n${email.text}`,
+      'utf8',
+    )
+    return `storage/dev-mail/${name}.html`
+  } catch (error) {
+    logger.warn('email.dev_mailbox_failed', { error })
+    return null
+  }
+}
+
+/** Development provider: records the message, delivers nothing. */
 export class ConsoleEmailProvider implements EmailProvider {
   readonly name = 'console'
   async send(email: OutgoingEmail): Promise<DeliveryResult> {
+    const mailbox = await saveToDevMailbox(email)
     logger.info('email.console_provider', {
       to: maskEmail(email.to),
       subject: email.subject,
-      // Development convenience only: the console provider is rejected in production.
-      preview: process.env.NODE_ENV === 'production' ? undefined : email.text,
+      // The console provider is refused in production. Links keep their secrets out of the log.
+      preview: process.env.NODE_ENV === 'production' ? undefined : redactLinkSecrets(email.text),
+      mailbox,
     })
     return {
       status: 'SKIPPED',

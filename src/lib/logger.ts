@@ -70,8 +70,18 @@ export function serializeError(error: unknown, includeStack: boolean): Record<st
   return { message: String(error) }
 }
 
+/** Secret parameters inside links (password reset, verification, unsubscribe…). */
+const LINK_SECRET = /([?#&](?:token|t|sig|signature|key|code)=)[^&\s#"'<>]+/gi
+
+/** Remove secret values from links in free text (e.g. an email body), keeping the rest readable. */
+export function redactLinkSecrets(text: string): string {
+  return text.replace(LINK_SECRET, '$1[REDACTED]')
+}
+
 export function redact(value: unknown, depth = 0, seen = new WeakSet<object>()): unknown {
   if (depth > 8) return '[Truncated]'
+  // Strings may embed links with tokens even under harmless keys.
+  if (typeof value === 'string') return redactLinkSecrets(value)
   if (value === null || typeof value !== 'object') return value
   if (value instanceof Date) return value.toISOString()
   if (value instanceof Error) return redact(serializeError(value, true), depth + 1, seen)

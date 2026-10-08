@@ -33,6 +33,9 @@ export async function POST(
   } catch {
     return json({ error: { code: 'RATE_LIMITED' } }, 429)
   }
+  // Refuse oversized bodies before reading them; re-check after (chunked bodies declare no length).
+  if (Number(req.headers.get('content-length') ?? 0) > MAX_BODY_BYTES)
+    return json({ error: { code: 'PAYLOAD_TOO_LARGE' } }, 413)
   const raw = await req.text()
   if (Buffer.byteLength(raw) > MAX_BODY_BYTES)
     return json({ error: { code: 'PAYLOAD_TOO_LARGE' } }, 413)
