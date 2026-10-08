@@ -5,6 +5,7 @@ import {
   orderPaidEmail,
   orderReceivedEmail,
   orderShippedEmail,
+  orderStaffEmail,
   returnCompletedEmail,
   returnRejectedEmail,
   returnStaffEmail,
@@ -75,6 +76,22 @@ describe('order emails', () => {
     expect(open.text).toContain('request a return')
     const closed = orderDeliveredEmail('en', order, null)
     expect(closed.text).not.toContain('request a return')
+  })
+
+  it('alerts the store with the order, contact details and an admin link', () => {
+    const email = orderStaffEmail({
+      ...order,
+      paymentMethod: 'COD',
+      customerEmail: 'noura@example.test',
+      recipientPhone: '0551234567',
+      adminUrl: 'https://velora.example/admin/orders/abc',
+    })
+    expect(email.subject).toContain('VLR-2026-000042')
+    expect(email.html).toContain('https://velora.example/admin/orders/abc')
+    expect(email.html).not.toContain('<script>')
+    expect(email.text).toContain('0551234567')
+    expect(email.text).toContain('Cash on delivery')
+    expect(email.text).toContain('Rose Gold Watch')
   })
 })
 

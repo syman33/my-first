@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { prisma } from '@/db/client'
 import { isAppError } from '@/lib/errors'
 import { processPendingEvents } from '@/services/events/process'
+import { getSettings } from '@/services/settings/settings.service'
 import {
   markDelivered,
   markOutForDelivery,
@@ -10,6 +11,22 @@ import {
 } from '@/services/orders/fulfillment.service'
 import { ManualShippingProvider, setShippingProvider } from '@/services/shipping/provider'
 import { confirmedOrder, placeOrder, readyToCheckout, staffAudit } from '../helpers/checkout'
+
+/** Store alerts about new orders, by order number. */
+async function staffAlerts(orderId: string) {
+  const { orderNumber } = await prisma.order.findUniqueOrThrow({
+    where: { id: orderId },
+    select: { orderNumber: true },
+  })
+  return prisma.notification.findMany({
+    where: {
+      template: 'order-staff',
+      userId: null,
+      data: { path: ['orderNumber'], equals: orderNumber },
+    },
+    select: { recipient: true },
+  })
+}
 
 async function errorOf(promise: Promise<unknown>) {
   try {
@@ -155,5 +172,18 @@ describe('fulfilment', () => {
     expect(
       await prisma.notification.count({ where: { userId: online.user.id, status: 'SENT' } }),
     ).toBe(0)
+
+    // The store hears about each order once, at the same moment as the customer.
+    const store = await getSettings('store')
+    expect(await staffAlerts(cod.orderId)).toEqual([{ recipient: store.email }])
+    expect(await staffAlerts(online.orderId)).toEqual([{ recipient: store.email }])
+  })
+
+  it('does not alert the store about an online order that was never paid', async () => {
+    const shopper = await readyToCheckout('mail-unpaid@example.test')
+    const placed = await placeOrder(shopper.client, shopper.address.id)
+    expect(placed.status).toBe(200)
+    await processPendingEvents(100)
+    expect(await staffAlerts(placed.body.data!.order.orderId)).toEqual([])
   })
 })

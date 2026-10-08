@@ -17,6 +17,7 @@ import {
   orderReceivedEmail,
   orderRefundedEmail,
   orderShippedEmail,
+  orderStaffEmail,
   paymentFailedEmail,
   returnApprovedEmail,
   returnCompletedEmail,
@@ -32,7 +33,9 @@ import {
  *
  * Online orders are announced once the payment succeeds — never while it is
  * still pending — so a customer who abandons the payment page gets no
- * misleading "order received" message.
+ * misleading "order received" message. The store's own email (Settings →
+ * Store) is told about each order at the same moment, and about each return
+ * request.
  */
 
 async function loadOrder(orderId: string) {
@@ -102,6 +105,28 @@ async function sendOrderEmail(
   })
 }
 
+/** Tell the store an order is ready to handle, in the same event as the customer's email. */
+async function sendStaffOrderEmail(eventId: string, order: LoadedOrder): Promise<void> {
+  const store = await getSettings('store')
+  const data = emailOrder(order, 'ar')
+  await sendNotification({
+    outboxEventId: eventId,
+    userId: null,
+    channel: 'EMAIL',
+    template: 'order-staff',
+    locale: 'ar',
+    recipient: store.email,
+    data: { orderNumber: order.orderNumber },
+    render: () =>
+      orderStaffEmail({
+        ...data,
+        customerEmail: order.user.email,
+        recipientPhone: order.shippingPhone,
+        adminUrl: appUrl(`/admin/orders/${order.id}`),
+      }),
+  })
+}
+
 async function loadReturn(returnRequestId: string) {
   return prisma.returnRequest.findUnique({
     where: { id: returnRequestId },
@@ -165,12 +190,14 @@ export function registerOrderNotificationHandlers(): void {
     // Online orders are announced when the payment succeeds.
     if (!order || order.paymentMethod !== 'COD' || order.status === 'CANCELLED') return
     await sendOrderEmail(event.id, order, 'order-received', orderReceivedEmail)
+    await sendStaffOrderEmail(event.id, order)
   })
 
   registerOutboxHandler('PAYMENT_SUCCEEDED', async (event) => {
     const order = await loadOrder(event.payload.orderId)
     if (!order) return
     await sendOrderEmail(event.id, order, 'order-paid', orderPaidEmail)
+    await sendStaffOrderEmail(event.id, order)
   })
 
   registerOutboxHandler('ORDER_CONFIRMED', async (event) => {

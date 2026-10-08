@@ -525,6 +525,43 @@ export function returnCompletedEmail(
   return returnEmail(locale, data, c.subject(data.returnNumber), [c.body, outcome])
 }
 
+/**
+ * Internal notice to the store that an order needs handling: cash-on-delivery
+ * orders when placed, online orders once paid (Arabic with English labels).
+ */
+export function orderStaffEmail(
+  data: EmailOrder & { customerEmail: string; recipientPhone: string; adminUrl: string },
+): RenderedEmail {
+  const money = formatMoney(data.total, 'ar')
+  const subject = `طلب جديد | New order ${data.orderNumber} — ${money}`
+  const rows: [string, string][] = [
+    ['الطلب / Order', data.orderNumber],
+    ['العميل / Customer', `${data.customerName} <${data.customerEmail}>`],
+    ['جوال المستلم / Recipient phone', data.recipientPhone],
+    [
+      'الدفع / Payment',
+      `${METHOD.ar[data.paymentMethod] ?? data.paymentMethod} / ${METHOD.en[data.paymentMethod] ?? data.paymentMethod}`,
+    ],
+  ]
+  const table = `<table role="presentation" cellpadding="6" cellspacing="0" style="width:100%;font-size:14px;margin:0 0 16px">${rows
+    .map(
+      ([label, value]) =>
+        `<tr><td style="color:#6b6b6b;white-space:nowrap">${esc(label)}</td><td>${esc(value)}</td></tr>`,
+    )
+    .join('')}</table>`
+  return {
+    subject,
+    html: layout(
+      'ar',
+      subject,
+      table +
+        summaryHtml('ar', data) +
+        button(data.adminUrl, 'فتح في لوحة الإدارة / Open in admin'),
+    ),
+    text: `${rows.map(([label, value]) => `${label}: ${value}`).join('\n')}\n\n${summaryText('ar', data)}\n\n${data.address.join('، ')}\n\n${data.adminUrl}`,
+  }
+}
+
 /** Internal notice to customer care (Arabic with English labels). */
 export function returnStaffEmail(
   data: EmailReturn & { customerEmail: string; note: string | null; adminUrl: string },

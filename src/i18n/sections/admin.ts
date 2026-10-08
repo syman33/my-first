@@ -912,6 +912,8 @@ const ar = {
     },
     hints: {
       store: {
+        email:
+          'يظهر للعملاء في صفحة التواصل والفواتير، ويصل إليه تنبيه بكل طلب جديد وكل طلب إرجاع ورسالة تواصل.',
         whatsapp: 'يظهر في صفحة التواصل كرابط محادثة، مثل 05XXXXXXXX.',
         commercialRegistration: '10 أرقام، ويظهر في تذييل الموقع والفواتير.',
         vatNumber: '15 رقماً، ويظهر في الفواتير الضريبية.',
@@ -923,7 +925,8 @@ const ar = {
       },
       tax: {
         rateBps: 'يجب أن تطابق تسجيلك لدى هيئة الزكاة والضريبة والجمارك.',
-        pricesIncludeTax: 'إلزامي عند البيع للمستهلكين في المملكة.',
+        pricesIncludeTax:
+          'أنظمة ضريبة القيمة المضافة في المملكة تشترط عادةً عرض أسعار المستهلك شاملة الضريبة؛ تأكد من ذلك مع محاسبك.',
       },
       cod: {},
       checkout: {
@@ -1089,6 +1092,7 @@ const ar = {
       'order-delivered': 'تسليم الطلب',
       'order-cancelled': 'إلغاء الطلب',
       'order-refunded': 'استرداد المبلغ',
+      'order-staff': 'طلب جديد (للفريق)',
       'return-requested': 'استلام طلب الإرجاع',
       'return-approved': 'قبول الإرجاع',
       'return-rejected': 'رفض الإرجاع',
@@ -2138,6 +2142,8 @@ const en: typeof ar = {
     },
     hints: {
       store: {
+        email:
+          'Shown to customers on the contact page and invoices; it also receives an alert for every new order, return request and contact message.',
         whatsapp: 'Shown on the contact page as a chat link, e.g. 05XXXXXXXX.',
         commercialRegistration: '10 digits; shown in the footer and on invoices.',
         vatNumber: '15 digits; shown on tax invoices.',
@@ -2149,7 +2155,8 @@ const en: typeof ar = {
       },
       tax: {
         rateBps: 'Must match your registration with ZATCA.',
-        pricesIncludeTax: 'Required when selling to consumers in Saudi Arabia.',
+        pricesIncludeTax:
+          'Saudi VAT rules generally require consumer prices to be shown including VAT; confirm with your accountant.',
       },
       cod: {},
       checkout: {
@@ -2319,6 +2326,7 @@ const en: typeof ar = {
       'order-delivered': 'Order delivered',
       'order-cancelled': 'Order cancelled',
       'order-refunded': 'Refund issued',
+      'order-staff': 'New order (team)',
       'return-requested': 'Return request received',
       'return-approved': 'Return approved',
       'return-rejected': 'Return rejected',

@@ -218,6 +218,10 @@ same database transaction; a worker delivers them afterwards.
   retry never sends twice. Short-lived secrets inside events (e.g. a set-password link)
   are encrypted at rest and erased after delivery.
 - Staff can see every notification and retry failed ones from the back office.
+- The store's email (Settings → Store) receives an alert for each new order — cash on
+  delivery when placed, online orders once paid, the same moment the customer is told —
+  and for each return request and contact message. Email is the only channel that sends:
+  SMS and WhatsApp are not connected, and no message is sent on them.
 
 **Where.** `src/services/events/`, `src/services/notifications/`.
 
