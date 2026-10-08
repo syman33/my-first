@@ -97,7 +97,7 @@ Everything you change in the back office is saved in the database and appears in
 - **What it shows**:
   - today's and recent sales;
   - orders by status;
-  - the **"يحتاج متابعة"** (needs attention) panel:
+  - the **"بانتظار الفريق"** (Waiting for the team) panel:
     - orders with a payment problem;
     - cash-on-delivery orders waiting for your confirmation;
     - orders ready to ship;
@@ -107,7 +107,7 @@ Everything you change in the back office is saved in the database and appears in
     - reviews waiting for approval;
     - new contact messages;
     - emails that failed.
-- **What to do**: work through the attention panel every morning. Each line opens the list behind it.
+- **What to do**: work through that panel every morning. Each line opens the list behind it.
 
 ### 3.2 New order alerts
 
@@ -203,10 +203,10 @@ For a card payment, the refund goes back to the card through the payment company
 15. **حد التنبيه لانخفاض المخزون** — the dashboard warns you when stock reaches this number (default 3).
 16. **مميز / الأكثر مبيعاً / وصل حديثاً** — tick these to show the bag in those sections of the home page.
 17. **محركات البحث** (SEO) — optional title and description for Google. When empty, the name and description are used.
-18. Press **حفظ** (Save). You land on the product's own page with the message "تم إنشاء المنتج".
+18. Press **إنشاء** (Create). You land on the product's own page with the message "تم إنشاء المنتج. أضف الصور ثم انشره." (Product created. Add photos, then publish it.)
 19. **الصور** (Photos) → **رفع صورة** (Upload photo), and choose the photo. Repeat for more photos.
 20. The **first** photo is the **main photo** (labelled "الصورة الرئيسية"). Use the up and down arrows to change the order.
-21. Fill in the **النص البديل** (alternative text) under each photo, a short description for blind visitors and for Google, and press save.
+21. Fill in the **النص البديل** (alternative text) under each photo, a short description for blind visitors and for Google, and press **حفظ النص البديل** (Save alternative text).
 22. To add another colour: **الخيارات والمخزون** (Options and stock) → **إضافة خيار** (Add option). Fill it in like step 13, choose that colour's photo in **الصورة**, set its opening stock, and save.
 23. An option can have its own price (**سعر خاص**). Leave it empty to use the product price.
 24. Scroll to **الحالة** (Status), choose **منشور** (Published), and press **حفظ** (Save).
@@ -229,7 +229,7 @@ found by search.
 | How large? | At most 8 MB, and the shorter side must be at least 600 pixels. 1600–2400 pixels on the long side looks best. |
 | What happens to them? | Each photo is checked and converted to WebP. Its hidden camera and location data (EXIF/GPS) is deleted. |
 | Main photo | The first one. Reorder with the arrows. |
-| Delete | **حذف** (Remove) under the photo, then confirm. |
+| Delete | **حذف الصورة** (Delete photo) under the photo, then confirm. |
 | Photo per colour | When editing an option, choose its photo in **الصورة**. |
 | Where are they stored? | In development, on the computer running the site. In production they **must** go to cloud storage (section 8.4). The server refuses to start in production without it. |
 
@@ -618,7 +618,7 @@ None of these are bought by this project. **Verify current pricing** for each be
 5. **Content**: settings, pages, products and photos, entered on production as soon as it exists
    (the shop can stay unannounced).
 6. **Production**: live keys, one real order and refund, then open to the public.
-7. **First weeks**: check the dashboard's attention panel and the notifications log daily;
+7. **First weeks**: check the dashboard's "بانتظار الفريق" panel and the notifications log daily;
    reconcile Moyasar payouts with **paid** orders weekly.
 
 ---
